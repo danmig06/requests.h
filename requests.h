@@ -176,7 +176,7 @@ struct header {
 
 struct request_options {
 	struct __sized_buf body;
-	bool use_ssl;
+	bool disable_ssl;
 	enum HTTPVER http_version;
 	struct header header;
 	struct url* url;
@@ -1032,6 +1032,7 @@ static void do_request(struct netio* io, struct url* host_url, enum REQUEST_METH
 		send_headers(io, &options->header);
 	} else {
 		send_host_header(io, host_url->hostname);
+		send_format(io, "\r\n");
 	}
 	if(have_to_send_body) {
 		io->send(io, options->body.data, options->body.size);
@@ -1047,11 +1048,7 @@ static struct response* perform_request(char* url_str, enum REQUEST_METHOD metho
 		error(FUNC_LINE_FMT "Failed to create socket\n", __func__, __LINE__);
 		return NULL;
 	}
-	if(options) {
-		if(options->use_ssl) {
-			connect_secure(&conn_io);
-		}
-	} else if(host_url.protocol == HTTPS) {
+	if(!(options && options->disable_ssl) && host_url.protocol == HTTPS) {
 		connect_secure(&conn_io);
 	}
 
