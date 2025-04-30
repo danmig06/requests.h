@@ -722,8 +722,13 @@ static void send_headers(struct netio* io, struct header* headers) {
 	send_format(io, "\r\n");
 }
 
-static void send_host_header(struct netio* io, char* hostname) {
-	send_format(io, "host: %s\r\n", hostname);
+static void send_host_header(struct netio* io, struct url* src_url) {
+	send_format(io, "host: %s", src_url->hostname);
+	if((src_url->protocol == HTTP && src_url->port != 80) ||
+	   (src_url->protocol == HTTPS && src_url->port != 443)) {
+		send_format(io, ":%d", src_url->port);
+	}
+	send_format(io, "\r\n");
 }
 
 static void send_content_length(struct netio* io, uint64_t content_length) {
@@ -792,60 +797,53 @@ static char* parse_status_line(char* status_line, enum HTTPSTATUS* status_code) 
 
 struct url resolve_url(char* url_str) {
   	struct url host_url = { .protocol = HTTP, .port = 80 };
-  	char* protocol_end = strchr(url_str, ':');
+	if(url_str) {
+		url_str = clone_string(url_str, strlen(url_str));
+		for(int i = 0; i < strlen(url_str); i++) {
+			url_str[i] = tolower(url_str[i]);
+		}
+	} else {
+		return (struct url){ 0 };
+	}
+
+	char* protocol_end = strchr(url_str, ':');
 	if(protocol_end != NULL) {
 		if(strlen(protocol_end) > STATIC_STRSIZE("://") && strncmp(protocol_end, "://", STATIC_STRSIZE("://")) == 0) {
-  			int protocol_size = protocol_end - url_str;
+			int protocol_size = protocol_end - url_str;
 
-  			if(protocol_size == STATIC_STRSIZE("https") && strncmp(url_str, "https", protocol_size) == 0) {
-  				host_url.protocol = HTTPS;
+			if(protocol_size == STATIC_STRSIZE("https") && strncmp(url_str, "https", protocol_size) == 0) {
+				host_url.protocol = HTTPS;
 				host_url.port = 443;
-  			}
+			}
 		} else {
 			protocol_end = NULL;
 		}
 	}
 
-  	char* hostname = (protocol_end != NULL) ? protocol_end + STATIC_STRSIZE("://") : url_str;
-	size_t route_size;
+	char* hostname = (protocol_end != NULL) ? protocol_end + STATIC_STRSIZE("://") : url_str;
+	size_t hostname_size;
 	char* route_begin = strchr(hostname, '/');
-	char* port_begin = NULL;
-	if(route_begin != NULL) {
-		char* route_end = strrchr(route_begin, ':');
-		if(route_end == NULL) {
-			route_size = strlen(route_begin);
-			route_end = route_begin + route_size;
-		} else {
-			route_size = route_end - route_begin;
-			port_begin = route_end;
-		}
-	} else {
-		port_begin = strrchr(hostname, ':');
-	}
-
-  	int hostname_size = strlen(hostname);
-	if(port_begin != NULL) {
-    		char* port_str = port_begin + 1;
-		int port_num = strtol(port_str, NULL, 10);
-		if(errno != EINVAL && port_num != 0) {
-			host_url.port = port_num;
-			hostname_size = (port_begin - hostname);
-		} else {
-			route_size = strlen(route_begin);
-			errno = 0;
-		}
-	}
-
 	if(route_begin != NULL) {
 		hostname_size = (route_begin - hostname);
-		host_url.route = clone_string(route_begin, route_size);
+		host_url.route = clone_string(route_begin, strlen(route_begin));
 	} else {
+		hostname_size = strlen(hostname);
 		host_url.route = clone_string("/", STATIC_STRSIZE("/"));
 	}
 
-  	host_url.hostname = clone_string(hostname, hostname_size);
+	char* port_str = NULL;
+	host_url.hostname = clone_string(hostname, hostname_size);
+	if((port_str = strchr(host_url.hostname, ':')) != NULL) {
+		short port = strtol(port_str + 1, NULL, 10);
+		if(errno == 0 && port >= 0) {
+			host_url.port = port;
+		}
+		*port_str = '\0';
+	}
+
 	debug(FUNC_LINE_FMT "parsed url: {\n\tprotocol: %s\n\thostname: %s\n\troute: %s\n\tport: %d\n}\n",
 			__func__, __LINE__, (host_url.protocol == HTTP) ? "HTTP" : "HTTPS", host_url.hostname, host_url.route, host_url.port);
+	free(url_str);
 	return host_url;
 }
 
@@ -1029,14 +1027,14 @@ static void do_request(struct netio* io, struct url* host_url, enum REQUEST_METH
 	send_request_line(io, method, (options) ? options->http_version : HTTP_1_1, host_url->route);
 	if(options) {
 		if(!header_get_value(&options->header, "host")) {
-			send_host_header(io, host_url->hostname);
+			send_host_header(io, host_url);
 		}
 		if(have_to_send_body && !header_get_value(&options->header, "Content-Length")) {
 			send_content_length(io, options->body.size);
 		}
 		send_headers(io, &options->header);
 	} else {
-		send_host_header(io, host_url->hostname);
+		send_host_header(io, host_url);
 		send_format(io, "\r\n");
 	}
 	if(have_to_send_body) {
