@@ -21,6 +21,7 @@ gcc <your_sources> <cflags> -ldl
 
 basic HTTP/HTTPS request from the [simple_get](https://github.com/danmig06/requests.h/blob/main/samples/simple_get.c) example
 ```c
+#define REQUESTS_IMPLEMENTATION
 #include "requests.h"
 #include <stdio.h>
 
@@ -46,6 +47,7 @@ The behaviour of each of the ``requests_*`` functions in the API can be manipula
 - ``http_version``: the protocol version, can contain only 2 values: ``HTTP_1_0`` (-1) and ``HTTP_1_1`` (0), making HTTP 1.1 the default option.
 - ``header``: an additional header to send, it is composed of ``entries``, which have a ``name`` and a ``value``, and ``num_entries``, you can add headers easily by using the ``header_add*`` functions.
 - ``url``: an already parsed/split URL, when not ``NULL``, the URL string supplied to any of the ``request_*`` functions is ignored and this struct is used instead, it can be useful when handling redirects.
+- ``cert``: the path to a custom ``.pem`` certificate file to be used by SSL for its handshake.
 
 each of these functions will return a pointer to a ``struct response`` with the following members:
 - ``body``: the body of the response, it has 2 members ``data`` and ``size``, if ``data`` is ``NULL`` then the response has no body.
