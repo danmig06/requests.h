@@ -26,7 +26,6 @@
 
 /*	TODO:
  *		- URL parameter parsing
- *		- POST requests require more testing
  *		- SSL cert verification
  *		- Custom SSL certs
  *		- maybe Input Stream system
@@ -209,6 +208,7 @@ struct response {
 };
 
 struct url resolve_url(char* url_str);
+struct url* clone_url(struct url* u);
 
 void header_add_sized(struct header* headers, char* key, size_t key_size, char* value, size_t value_size);
 void header_add(struct header* headers, char* key, char* value);
@@ -244,7 +244,7 @@ void free_header(struct header* freeptr);
  |	  					IMPLEMENTATIONS            				 |
  |				     									 |
   ------------------------------------------------------------------------------------------------------ */
-
+#ifdef REQUESTS_IMPLEMENTATION
 /* ----------------------------------
  |				     |
  |	  custom realloc()           |
@@ -445,6 +445,7 @@ static struct {
 	int (*write)(SSL*, void*, size_t, size_t*);
 	int (*read)(SSL*, void*, size_t, size_t*);
 	X509* (*get_peer_certificate)(SSL*);
+	int (*use_certificate_file)(SSL*, char*, int);
 	void (*free_ssl)(SSL*);
 	void (*free_ssl_ctx)(SSL_CTX*);
 	void (*free_x509)(X509*);
@@ -500,6 +501,7 @@ static void* load_ssl_functions(void) {
 	libssl.write = LOAD_FUNC("SSL_write_ex");
 	libssl.read = LOAD_FUNC("SSL_read_ex");
 	libssl.get_peer_certificate = LOAD_FUNC("SSL_get1_peer_certificate");
+	libssl.use_certificate_file = LOAD_FUNC("SSL_use_certificate_file");
 	libssl.free_ssl = LOAD_FUNC("SSL_free");
 	libssl.free_ssl_ctx = LOAD_FUNC("SSL_CTX_free");
 	libssl.free_x509 = LOAD_FUNC("X509_free");
@@ -566,11 +568,11 @@ static char* clone_string(char* src, int len) {
 	return dst;
 }
 
-int cistrcmp(const char* a, const char* b) {
+static int cistrcmp(const char* a, const char* b) {
 	uint8_t diff;
 	while(a++, b++) {
 		diff = tolower(*a) - tolower(*b);
-		if (diff != 0 || !*a)
+		if(diff != 0 || !*a)
 			break;
 	}
 	return diff;
@@ -693,17 +695,23 @@ static int connect_to_host(struct url* url) {
 	return socket_fd;
 }
 
-static void connect_secure(struct netio* io) {
-	if(io->socket < 0) return;
+static bool connect_secure(struct netio* io, char* certfile) {
+	if(io->socket < 0) return false;
 	if(!libssl.self) {
-		if(!load_ssl_functions())
-			return;
-	}
-	if(!init_ssl_context()) {
-		return;
+		if(!load_ssl_functions()) {
+			return false;
+		}
+		if(!init_ssl_context()) {
+			error(FUNC_LINE_FMT "failed to initialize SSL context\n", __func__, __LINE__);
+			return false;
+		}
 	}
 	if(!(io->ssl = libssl.new(g_ssl_ctx))) {
-		return;
+		error(FUNC_LINE_FMT "failed to create SSL object\n", __func__, __LINE__);
+		return false;
+	}
+	if(certfile) {
+		libssl.use_certificate_file(io->ssl, certfile, SSL_FILETYPE_PEM);
 	}
 	libssl.set_fd(io->ssl, io->socket);
 	if(libssl.connect(io->ssl)) {
@@ -712,10 +720,12 @@ static void connect_secure(struct netio* io) {
 		io->send = __secure_send;
 		io->recv = __secure_recv;
 	} else {
+		error(FUNC_LINE_FMT "SSL handshake failed\n", __func__, __LINE__);
 		libssl.free_ssl(io->ssl);
 		io->ssl = NULL;
-		return;
+		return false;
 	}
+	return true;
 }
 
 /* ----------------------------------
@@ -1064,7 +1074,7 @@ static void do_request(struct netio* io, struct url* host_url, enum REQUEST_METH
 }
 
 static struct response* perform_request(char* url_str, enum REQUEST_METHOD method, struct ostream* outstream, struct request_options* options) {
-	struct url host_url = {0};
+	struct url host_url = { 0 };
 	struct netio conn_io = { .ssl = NULL, .send = __not_secure_send, .recv = __not_secure_recv };
 	host_url = (options && options->url) ? *options->url : resolve_url(url_str);	
 	
@@ -1073,7 +1083,10 @@ static struct response* perform_request(char* url_str, enum REQUEST_METHOD metho
 		return NULL;
 	}
 	if(!(options && options->disable_ssl) && host_url.protocol == HTTPS) {
-		connect_secure(&conn_io);
+		char* certfile = (options && options->cert) ? options->cert : NULL;
+		if(!connect_secure(&conn_io, certfile)) {
+			return NULL;
+		}
 	}
 
 	do_request(&conn_io, &host_url, method, options);
@@ -1156,6 +1169,8 @@ struct response* requests_put_fileptr(char* url, FILE* file, struct request_opti
 struct response* requests_options(char* url, struct request_options* options) {
 	return perform_request(url, OPTIONS, NULL, options);
 }
+#undef REQUESTS_IMPLEMENTATION
+#endif // #ifdef REQUESTS_IMPLEMENTATION
 
 #undef info
 #undef warn

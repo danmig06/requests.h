@@ -1,3 +1,4 @@
+#define REQUESTS_IMPLEMENTATION
 #include "requests.h"
 #include <stdio.h>
 
