@@ -1,14 +1,24 @@
-/*
- * Copyright (c) 2025 Daniele Migliore
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+/* MIT License
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * Copyright (c) 2025 Daniele Migliore
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 #ifndef HAVE_REQUEST_H
@@ -199,20 +209,32 @@ struct response {
 };
 
 struct url resolve_url(char* url_str);
+
 void header_add_sized(struct header* headers, char* key, size_t key_size, char* value, size_t value_size);
 void header_add(struct header* headers, char* key, char* value);
 void header_add_str(struct header* headers, char* header_str);
+
 struct response* requests_get(char* url, struct request_options* options);
 struct response* requests_get_file(char* url, char* filename, struct request_options* options);
+struct response* requests_get_fileptr(char* url, FILE* file, struct request_options* options);
+
 struct response* requests_head(char* url, struct request_options* options);
+
 struct response* requests_post(char* url, struct request_options* options);
 struct response* requests_post_file(char* url, char* filename, struct request_options* options);
+struct response* requests_post_fileptr(char* url, FILE* file, struct request_options* options);
+
 struct response* requests_put(char* url, struct request_options* options);
 struct response* requests_put_file(char* url, char* filename, struct request_options* options);
+struct response* requests_put_fileptr(char* url, FILE* file, struct request_options* options);
+
 struct response* requests_options(char* url, struct request_options* options);
+
 void requests_set_log_level(enum LOGLEVEL mask);
+
 struct header_entry* header_get(struct header* headers, char* key);
 char* header_get_value(struct header* headers, char* key);
+
 struct response* alloc_response(void);
 void free_response(struct response* freeptr);
 void free_header(struct header* freeptr);
@@ -556,7 +578,6 @@ int cistrcmp(const char* a, const char* b) {
 
 void header_add_sized(struct header* headers, char* key, size_t key_size, char* value, size_t value_size) {
 	char* key_clone = clone_string(key, key_size);
-	struct header_entry* entry = NULL;
 	size_t n_entries = headers->num_entries;
 	headers->entries = reallocate(headers->entries, 
 			n_entries * sizeof(*headers->entries), (n_entries + 1) * sizeof(*headers->entries));
@@ -799,7 +820,7 @@ struct url resolve_url(char* url_str) {
   	struct url host_url = { .protocol = HTTP, .port = 80 };
 	if(url_str) {
 		url_str = clone_string(url_str, strlen(url_str));
-		for(int i = 0; i < strlen(url_str); i++) {
+		for(size_t i = 0; i < strlen(url_str); i++) {
 			url_str[i] = tolower(url_str[i]);
 		}
 	} else {
@@ -1072,7 +1093,7 @@ struct response* requests_get(char* url, struct request_options* options) {
 	struct __sized_buf b = { 0 };
 	struct ostream buffer_stream = os_create_buf(&b);
 	struct response* r = NULL;
-	if(r = perform_request(url, GET, &buffer_stream, options)) {
+	if((r = perform_request(url, GET, &buffer_stream, options))) {
 		r->body = b;
 	}
 	return r;
@@ -1080,6 +1101,11 @@ struct response* requests_get(char* url, struct request_options* options) {
 
 struct response* requests_get_file(char* url, char* filename, struct request_options* options) {
 	struct ostream file_stream = os_create_file(filename);
+	return perform_request(url, GET, &file_stream, options);
+}
+
+struct response* requests_get_fileptr(char* url, FILE* file, struct request_options* options) {
+	struct ostream file_stream = os_create_fileptr(file);
 	return perform_request(url, GET, &file_stream, options);
 }
 
@@ -1091,7 +1117,7 @@ struct response* requests_post(char* url, struct request_options* options) {
 	struct __sized_buf b = { 0 };
 	struct ostream buffer_stream = os_create_buf(&b);
 	struct response* r = NULL;
-	if(r = perform_request(url, POST, &buffer_stream, options)) {
+	if((r = perform_request(url, POST, &buffer_stream, options))) {
 		r->body = b;
 	}
 	return r;
@@ -1102,11 +1128,16 @@ struct response* requests_post_file(char* url, char* filename, struct request_op
 	return perform_request(url, POST, &file_stream, options);
 }
 
+struct response* requests_post_fileptr(char* url, FILE* file, struct request_options* options) {
+	struct ostream file_stream = os_create_fileptr(file);
+	return perform_request(url, POST, &file_stream, options);
+}
+
 struct response* requests_put(char* url, struct request_options* options) {
 	struct __sized_buf b = { 0 };
 	struct ostream buffer_stream = os_create_buf(&b);
 	struct response* r = NULL;
-	if(r = perform_request(url, POST, &buffer_stream, options)) {
+	if((r = perform_request(url, PUT, &buffer_stream, options))) {
 		r->body = b;
 	}
 	return r;
@@ -1114,6 +1145,11 @@ struct response* requests_put(char* url, struct request_options* options) {
 
 struct response* requests_put_file(char* url, char* filename, struct request_options* options) {
 	struct ostream file_stream = os_create_file(filename);
+	return perform_request(url, PUT, &file_stream, options);
+}
+
+struct response* requests_put_fileptr(char* url, FILE* file, struct request_options* options) {
+	struct ostream file_stream = os_create_fileptr(file);
 	return perform_request(url, PUT, &file_stream, options);
 }
 
