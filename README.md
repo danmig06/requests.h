@@ -1,6 +1,6 @@
 # requests.h
 
-Single header HTTP/HTTPS request library in C99
+Single header HTTP/HTTPS request library in C99<br>
 The aim of this project is to make HTTP/HTTPS requests simple in C, providing something similar to [python3's requests module](https://github.com/psf/requests).
 It currently supports HTTP 1.0 and 1.1, also through SSL (HTTPS).<br>
 **This project is still work in progress and still needs many more features!**
