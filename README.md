@@ -15,7 +15,11 @@ It currently supports HTTP 1.0 and 1.1, also through SSL (HTTPS).<br>
 
 # Usage
 
-Compiling is just as easy as compling a regular C program, at compile-time, this library has no external dependencies!
+Compiling is just as easy as compling a regular C program, at compile-time, this library has no third-party dependencies!
+
+```
+gcc <your_sources> <cflags> -ldl
+```
 
 here's a basic HTTP/HTTPS request from the [simple_get](https://github.com/danmig06/requests.h/blob/main/samples/simple_get.c) example
 ```c
