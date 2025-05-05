@@ -1,3 +1,5 @@
+#ifndef HAVE_REQUEST_H
+#define HAVE_REQUEST_H
 /* MIT License
  *
  * Copyright (c) 2025 Daniele Migliore
@@ -21,13 +23,9 @@
  * SOFTWARE.
  */
 
-#ifndef HAVE_REQUEST_H
-#define HAVE_REQUEST_H
-
 /*	TODO:
  *		- URL parameter parsing
- *		- SSL cert verification
- *		- Custom SSL certs
+ *		- SSL cert verification (implemented, needs testing)
  *		- maybe Input Stream system
  */
 
@@ -36,13 +34,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdarg.h>
+#include <errno.h>
+
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#include <stdarg.h>
 #include <unistd.h>
-#include <errno.h>
 #include <dlfcn.h>
 
 #include <openssl/ssl.h>
@@ -55,6 +54,7 @@
 #define REQUESTS_RECV_BUFSIZE 1024 * 256 
 #define STATIC_STRSIZE(str) (sizeof(str) - 1)
 #define MIN(x, y) ((x < y) ? x : y)
+#define OPTION(s, m) (s && (s)->m)
 
 #ifdef __cplusplus
 extern "C" {
@@ -62,7 +62,7 @@ extern "C" {
 
 /* ----------------------------------
  |				     |
- |	structs, enums & API         |
+ |	enums, structs & API         |
  |				     |
   ---------------------------------- */
 
@@ -444,7 +444,11 @@ static struct {
 	int (*connect)(SSL*);
 	int (*write)(SSL*, void*, size_t, size_t*);
 	int (*read)(SSL*, void*, size_t, size_t*);
+	long (*ctrl)(SSL*, int, long, void*);
+	void (*set_verify)(SSL*, int, SSL_verify_cb);
 	X509* (*get_peer_certificate)(SSL*);
+	int (*ctx_set_default_verify_paths)(SSL_CTX *ctx);
+	long (*get_verify_result)(SSL*);
 	int (*use_certificate_file)(SSL*, char*, int);
 	void (*free_ssl)(SSL*);
 	void (*free_ssl_ctx)(SSL_CTX*);
@@ -500,7 +504,11 @@ static void* load_ssl_functions(void) {
 	libssl.connect = LOAD_FUNC("SSL_connect");
 	libssl.write = LOAD_FUNC("SSL_write_ex");
 	libssl.read = LOAD_FUNC("SSL_read_ex");
+	libssl.ctrl = LOAD_FUNC("SSL_ctrl");
+	libssl.set_verify = LOAD_FUNC("SSL_set_verify");
 	libssl.get_peer_certificate = LOAD_FUNC("SSL_get1_peer_certificate");
+	libssl.ctx_set_default_verify_paths = LOAD_FUNC("SSL_CTX_set_default_verify_paths");
+	libssl.get_verify_result = LOAD_FUNC("SSL_get_verify_result");
 	libssl.use_certificate_file = LOAD_FUNC("SSL_use_certificate_file");
 	libssl.free_ssl = LOAD_FUNC("SSL_free");
 	libssl.free_ssl_ctx = LOAD_FUNC("SSL_CTX_free");
@@ -520,6 +528,7 @@ static SSL_CTX* init_ssl_context(void) {
 		return g_ssl_ctx;
 	}
 	g_ssl_ctx = libssl.ctx_new(libssl.client_method());
+	libssl.ctx_set_default_verify_paths(g_ssl_ctx);
 	if(!g_ssl_ctx) {
 		error(FUNC_LINE_FMT "SSL context initialization failed\n", __func__, __LINE__);
 		return NULL;
@@ -695,7 +704,7 @@ static int connect_to_host(struct url* url) {
 	return socket_fd;
 }
 
-static bool connect_secure(struct netio* io, char* certfile) {
+static bool connect_secure(struct netio* io, char* vfy_hostname, char* certfile) {
 	if(io->socket < 0) return false;
 	if(!libssl.self) {
 		if(!load_ssl_functions()) {
@@ -711,21 +720,34 @@ static bool connect_secure(struct netio* io, char* certfile) {
 		return false;
 	}
 	if(certfile) {
+		debug(FUNC_LINE_FMT "Using custom certificate from '%s'\n", __func__, __LINE__, certfile);
 		libssl.use_certificate_file(io->ssl, certfile, SSL_FILETYPE_PEM);
 	}
+	// SSL_set_tlsext_host_name(io->ssl, vfy_hostname) -- very important, this sets up the Server Name Indication for cert verification
+	libssl.ctrl(io->ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, vfy_hostname);
 	libssl.set_fd(io->ssl, io->socket);
 	if(libssl.connect(io->ssl)) {
+		libssl.set_verify(io->ssl, SSL_VERIFY_PEER, NULL);
 		X509* server_cert = libssl.get_peer_certificate(io->ssl);
+		if(!server_cert) { 
+			error(FUNC_LINE_FMT "No certificate was provided by the server\n", __func__, __LINE__);
+			goto cleanup;
+		}
 		libssl.free_x509(server_cert);
+		long result = 0;
+		if((result = libssl.get_verify_result(io->ssl)) != X509_V_OK) {
+			error(FUNC_LINE_FMT "certificate verification failed, code %ld\n", result);
+			goto cleanup;
+		}
 		io->send = __secure_send;
 		io->recv = __secure_recv;
-	} else {
-		error(FUNC_LINE_FMT "SSL handshake failed\n", __func__, __LINE__);
-		libssl.free_ssl(io->ssl);
-		io->ssl = NULL;
-		return false;
+		return true;
 	}
-	return true;
+
+cleanup:
+	libssl.free_ssl(io->ssl);
+	io->ssl = NULL;
+	return false;
 }
 
 /* ----------------------------------
@@ -1054,7 +1076,7 @@ static struct response* retrieve_response(struct netio* io, struct ostream* outs
 }
 
 static void do_request(struct netio* io, struct url* host_url, enum REQUEST_METHOD method, struct request_options* options) {
-	bool have_to_send_body = options && options->body.data && (method == POST || method == PUT);
+	bool have_to_send_body = OPTION(options, body.data) && (method == POST || method == PUT);
 	send_request_line(io, method, (options) ? options->http_version : HTTP_1_1, host_url->route);
 	if(options) {
 		if(!header_get_value(&options->header, "host")) {
@@ -1076,15 +1098,15 @@ static void do_request(struct netio* io, struct url* host_url, enum REQUEST_METH
 static struct response* perform_request(char* url_str, enum REQUEST_METHOD method, struct ostream* outstream, struct request_options* options) {
 	struct url host_url = { 0 };
 	struct netio conn_io = { .ssl = NULL, .send = __not_secure_send, .recv = __not_secure_recv };
-	host_url = (options && options->url) ? *options->url : resolve_url(url_str);	
+	host_url = OPTION(options, url) ? *options->url : resolve_url(url_str);	
 	
 	if((conn_io.socket = connect_to_host(&host_url)) < 0) {
 		error(FUNC_LINE_FMT "Failed to create socket\n", __func__, __LINE__);
 		return NULL;
 	}
-	if(!(options && options->disable_ssl) && host_url.protocol == HTTPS) {
-		char* certfile = (options && options->cert) ? options->cert : NULL;
-		if(!connect_secure(&conn_io, certfile)) {
+	if(!OPTION(options, disable_ssl) && host_url.protocol == HTTPS) {
+		char* certfile = OPTION(options, cert) ? options->cert : NULL;
+		if(!connect_secure(&conn_io, host_url.hostname, certfile)) {
 			return NULL;
 		}
 	}
@@ -1176,6 +1198,8 @@ struct response* requests_options(char* url, struct request_options* options) {
 #undef warn
 #undef error
 #undef debug
+
+#undef OPTION
 
 #ifdef __cplusplus
 }
