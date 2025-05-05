@@ -10,16 +10,14 @@ It currently supports HTTP 1.0 and 1.1, also through SSL (HTTPS).<br>
 - Simple API focused on Ease-of-Use
 - No initialization required
 - libssl loading at runtime only when needed, further reducing memory consumption
-- Written in less than 1200 lines of GNU C99
+- *browser-style* (supports [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication)) certificate validation (experimental)
+- Written in a little over 1000 lines of GNU C99
 
 # Usage
 
-Compiling is just as easy as compling a regular C program, this library depends on ``libdl`` for SSL support
-```bash
-gcc <your_sources> <cflags> -ldl
-```
+Compiling is just as easy as compling a regular C program, at compile-time, this library has no external dependencies!
 
-basic HTTP/HTTPS request from the [simple_get](https://github.com/danmig06/requests.h/blob/main/samples/simple_get.c) example
+here's a basic HTTP/HTTPS request from the [simple_get](https://github.com/danmig06/requests.h/blob/main/samples/simple_get.c) example
 ```c
 #define REQUESTS_IMPLEMENTATION
 #include "requests.h"
