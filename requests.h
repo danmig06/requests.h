@@ -479,22 +479,17 @@ static ssize_t __secure_recv(struct netio* conn_io, void* buf, size_t num) {
 static void* load_ssl_functions(void) {
 	uint8_t errcnt = 0;
 	char* err = NULL;
-	if((libssl.libcrypto = dlopen("libcrypto.so", RTLD_NOLOAD | RTLD_GLOBAL)) == NULL) {
-		libssl.libcrypto = dlopen("libcrypto.so", RTLD_NOW | RTLD_GLOBAL);
-		if(!libssl.libcrypto) {
-			error(FUNC_LINE_FMT "Failed to load libcrypto, libssl loading aborted: %s\n", __func__, __LINE__, dlerror());
-			return NULL;
-		}
+	if((libssl.libcrypto = dlopen("libcrypto.so", RTLD_LAZY | RTLD_GLOBAL)) == NULL) {
+		error(FUNC_LINE_FMT "Failed to load libcrypto, libssl loading aborted: %s\n", __func__, __LINE__, dlerror());
+		return NULL;
 	}
-	if((libssl.self = dlopen("libssl.so", RTLD_NOLOAD)) == NULL) {
-		libssl.self = dlopen("libssl.so", RTLD_NOW);
-		if(!libssl.self) {
-			error(FUNC_LINE_FMT "Failed to load libssl: %s\n", __func__, __LINE__, dlerror());
-			dlclose(libssl.libcrypto);
-			libssl.libcrypto = NULL;
-			return NULL;
-		}
+	if((libssl.self = dlopen("libssl.so", RTLD_LAZY)) == NULL) {
+		error(FUNC_LINE_FMT "Failed to load libssl: %s\n", __func__, __LINE__, dlerror());
+		dlclose(libssl.libcrypto);
+		libssl.libcrypto = NULL;
+		return NULL;
 	}
+
 	libssl.init = LOAD_FUNC("OPENSSL_init_ssl");
 	libssl.new = LOAD_FUNC("SSL_new");
 	libssl.ctx_new = LOAD_FUNC("SSL_CTX_new");
@@ -1118,8 +1113,10 @@ static struct response* perform_request(char* url_str, enum REQUEST_METHOD metho
 		return NULL;
 	}
 	resp->url = clone_url(&host_url);
-	free(host_url.route);
-	free(host_url.hostname);
+	if(!OPTION(options, url)) {
+		free(host_url.route);
+		free(host_url.hostname);
+	}
 	netio_close(&conn_io);
 	return resp;
 }
