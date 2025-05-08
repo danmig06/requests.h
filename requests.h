@@ -25,7 +25,8 @@
 
 /*	TODO:
  *		- URL parameter parsing
- *		- SSL cert verification (implemented, needs testing)
+ *		- User download callback
+ *		- automatic filename detection on NULL filename
  *		- maybe Input Stream system
  */
 
@@ -424,6 +425,7 @@ static void __os_close_buf(struct ostream* os) {
 	struct __sized_buf* b = os->object;
 	b->data = reallocate(b->data, b->size, b->size + 1);
 	b->data[b->size] = '\0';
+	memset(os, 0, sizeof(*os));
 }
 
 /* ----------------------------------
@@ -573,11 +575,19 @@ static char* clone_string(char* src, int len) {
 }
 
 static int cistrcmp(const char* a, const char* b) {
-	uint8_t diff;
-	while(a++, b++) {
+	uint8_t diff = 0;
+	while(diff == 0 && *a && *b) {
 		diff = tolower(*a) - tolower(*b);
-		if(diff != 0 || !*a)
-			break;
+		a++, b++;
+	}
+	return diff;
+}
+
+static int cistrncmp(const char* a, const char* b, int n) {
+	uint8_t diff = 0;
+	while(diff == 0 && *a && *b && n > 0) {
+		diff = tolower(*a) - tolower(*b);
+		n--, a++, b++;
 	}
 	return diff;
 }
@@ -638,13 +648,6 @@ void free_response(struct response* freeptr) {
 		free(freeptr->body.data);
 	}
 	free(freeptr);
-}
-
-static void free_header_strings(char** strings) {
-	for(size_t i = 0; strings[i] != NULL; i++) {
-		free(strings[i]);
-	}
-	free(strings);
 }
 
 void netio_close(struct netio* freeptr) {
@@ -812,32 +815,17 @@ void header_add_str(struct header* headers, char* header_str) {
 	header_add_sized(headers, name, name_size, value, value_size);
 }
 
-static void parse_headers(struct header* headers, char** strings) {
-	int i = 0;
-	char *name, *name_end, *value, *value_end;
-	size_t name_size, value_size;
-	while(strings[i] != NULL) {
-		name = strings[i];
-		name_end = strchr(name, ':');
-		if(!name_end) {
-			continue;
-		}
-		name_size = name_end - name;
-		value = name_end + STATIC_STRSIZE(": ");
-		value_end = &value[strlen(value)];
-		value_size = value_end - value;
-		header_add_sized(headers, name, name_size, value, value_size);
-		debug(FUNC_LINE_FMT "parsed header: {\n\tname: \"%s\",\n\tvalue: \"%s\"\n}\n", __func__, __LINE__, headers->entries[i].name, headers->entries[i].value);
-		i++;
-	}
-	headers->num_entries = i;
-}
-
 static char* parse_status_line(char* status_line, enum HTTPSTATUS* status_code) {
 	char* reason_str = NULL;
 	if(status_line) {
 		char* status_code_str = strchr(status_line, ' ');
-		reason_str = strchr(status_code_str, ' ') + 1;
+		if(!status_code_str) {
+			return NULL;
+		}
+		reason_str = strchr(status_code_str, ' ');
+		if(reason_str) {
+			reason_str++;
+		}
 		*status_code = strtol(status_code_str, NULL, 10);
 	}
 	return reason_str;
@@ -845,12 +833,7 @@ static char* parse_status_line(char* status_line, enum HTTPSTATUS* status_code) 
 
 struct url resolve_url(char* url_str) {
   	struct url host_url = { .protocol = HTTP, .port = 80 };
-	if(url_str) {
-		url_str = clone_string(url_str, strlen(url_str));
-		for(size_t i = 0; i < strlen(url_str); i++) {
-			url_str[i] = tolower(url_str[i]);
-		}
-	} else {
+	if(!url_str) {
 		return (struct url){ 0 };
 	}
 
@@ -859,7 +842,7 @@ struct url resolve_url(char* url_str) {
 		if(strlen(protocol_end) > STATIC_STRSIZE("://") && strncmp(protocol_end, "://", STATIC_STRSIZE("://")) == 0) {
 			int protocol_size = protocol_end - url_str;
 
-			if(protocol_size == STATIC_STRSIZE("https") && strncmp(url_str, "https", protocol_size) == 0) {
+			if(protocol_size == STATIC_STRSIZE("https") && cistrncmp(url_str, "https", STATIC_STRSIZE("https")) == 0) {
 				host_url.protocol = HTTPS;
 				host_url.port = 443;
 			}
@@ -891,7 +874,6 @@ struct url resolve_url(char* url_str) {
 
 	debug(FUNC_LINE_FMT "parsed url: {\n\tprotocol: %s\n\thostname: %s\n\troute: %s\n\tport: %d\n}\n",
 			__func__, __LINE__, (host_url.protocol == HTTP) ? "HTTP" : "HTTPS", host_url.hostname, host_url.route, host_url.port);
-	free(url_str);
 	return host_url;
 }
 
@@ -975,22 +957,22 @@ static char* retrieve_raw_headers(struct netio* io) {
 	return buf;
 }
 
-static char* retrieve_headers(struct response* resp, char* raw_response) {
-	int i = 0;
-	char* endptr = raw_response;
+static char* parse_headers(struct response* resp, char* raw_headers) {
+	char* endptr = raw_headers;
 	char* line = response_getline(&endptr);
-	char** header_lines = NULL;
 	debug("got status line: %s\n", line);
 	resp->status_line = line;
 	resp->reason = parse_status_line(resp->status_line, &resp->status_code);
-	while(*endptr != '\0' && line != NULL) {
+	while(*endptr != '\0') {
 		line = response_getline(&endptr);
-		header_lines = reallocate(header_lines, i * sizeof(*header_lines), (i + 1) * sizeof(*header_lines));
-		header_lines[i] = line;
-		i++;
+		if(line == NULL) {
+			break;
+		}
+		header_add_str(&resp->header, line);
+		debug(FUNC_LINE_FMT "parsed header: {\n\tname: \"%s\",\n\tvalue: \"%s\"\n}\n", __func__, __LINE__, 
+				resp->header.entries[resp->header.num_entries - 1].name, resp->header.entries[resp->header.num_entries - 1].value);
+		free(line);
 	}
-	parse_headers(&resp->header, header_lines);
-	free_header_strings(header_lines);
 	return endptr;
 }
 
@@ -1030,7 +1012,7 @@ static struct response* retrieve_response(struct netio* io, struct ostream* outs
 	}
 	int64_t content_length =  -1;
 	struct response* resp = alloc_response();
-	retrieve_headers(resp, raw_headers);
+	parse_headers(resp, raw_headers);
 	free(raw_headers);
 	if(!outstream) {
 		return resp;
@@ -1133,10 +1115,17 @@ struct response* requests_get(char* url, struct request_options* options) {
 
 struct response* requests_get_file(char* url, char* filename, struct request_options* options) {
 	struct ostream file_stream = os_create_file(filename);
+	if(!file_stream.object) {
+		return NULL;
+	}
 	return perform_request(url, GET, &file_stream, options);
 }
 
 struct response* requests_get_fileptr(char* url, FILE* file, struct request_options* options) {
+	if(!file) {
+		error(FUNC_LINE_FMT "invalid file pointer\n", __func__, __LINE__);
+		return NULL;
+	}
 	struct ostream file_stream = os_create_fileptr(file);
 	return perform_request(url, GET, &file_stream, options);
 }
@@ -1157,10 +1146,17 @@ struct response* requests_post(char* url, struct request_options* options) {
 
 struct response* requests_post_file(char* url, char* filename, struct request_options* options) {
 	struct ostream file_stream = os_create_file(filename);
+	if(!file_stream.object) {
+		return NULL;
+	}
 	return perform_request(url, POST, &file_stream, options);
 }
 
 struct response* requests_post_fileptr(char* url, FILE* file, struct request_options* options) {
+	if(!file) {
+		error(FUNC_LINE_FMT "invalid file pointer\n", __func__, __LINE__);
+		return NULL;
+	}
 	struct ostream file_stream = os_create_fileptr(file);
 	return perform_request(url, POST, &file_stream, options);
 }
@@ -1177,10 +1173,17 @@ struct response* requests_put(char* url, struct request_options* options) {
 
 struct response* requests_put_file(char* url, char* filename, struct request_options* options) {
 	struct ostream file_stream = os_create_file(filename);
+	if(!file_stream.object) {
+		return NULL;
+	}
 	return perform_request(url, PUT, &file_stream, options);
 }
 
 struct response* requests_put_fileptr(char* url, FILE* file, struct request_options* options) {
+	if(!file) {
+		error(FUNC_LINE_FMT "invalid file pointer\n", __func__, __LINE__);
+		return NULL;
+	}
 	struct ostream file_stream = os_create_fileptr(file);
 	return perform_request(url, PUT, &file_stream, options);
 }
