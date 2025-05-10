@@ -38,12 +38,47 @@
 #include <stdarg.h>
 #include <errno.h>
 
+#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <dlfcn.h>
+#define LIBCRYPTO_NAME "libcrypto.so"
+#define LIBSSL_NAME "libssl.so"
+#define closesocket(s) close(s)
+
+#elif defined(WIN32_LEAN_AND_MEAN) || defined(_WIN32) || defined(WIN32)
+
+#include <ws2tcpip.h>
+#include <winsock2.h>
+#include <windows.h>
+
+#define RTLD_LAZY 0
+#define RTLD_GLOBAL 0
+#define dlopen(name, flags) LoadLibraryA(name)
+#define dlsym(lib, name) (void*)GetProcAddress(lib, name)
+#define dlclose(lib) FreeLibrary(lib)
+#define LIBCRYPTO_NAME "libcrypto-3-x64.dll"
+#define LIBSSL_NAME "libssl-3-x64.dll"
+
+static char windows_errbuf[65536] = {0};
+char* dlerror() {
+	DWORD err = GetLastError();
+	if(!err) {
+		return NULL;	
+	}
+
+	snprintf(windows_errbuf, sizeof(windows_errbuf), "WinAPI error %d", err);
+
+	return windows_errbuf;
+}
+
+#else
+#error "unsupported platform"
+#endif
 
 #include <openssl/ssl.h>
 #include <openssl/pem.h>
@@ -162,7 +197,7 @@ enum LOGLEVEL {
 	NONE = 1,
 	INFO = 2,
 	WARN = 4,
-	ERROR = 8,
+	ERR = 8,
 	DEBUG = 16,
 	ALL = 31
 };
@@ -280,7 +315,7 @@ static void* reallocate(void* ptr, size_t oldsz, size_t newsz) {
 
 #define info(fmt, ...) logger_log(INFO, stdout, fmt, ##__VA_ARGS__)
 #define warn(fmt, ...) logger_log(WARN, stdout, fmt, ##__VA_ARGS__)
-#define error(fmt, ...) logger_log(ERROR, stdout, fmt, ##__VA_ARGS__)
+#define error(fmt, ...) logger_log(ERR, stdout, fmt, ##__VA_ARGS__)
 #define debug(fmt, ...) logger_log(DEBUG, stdout, fmt, ##__VA_ARGS__)
 
 #else
@@ -307,7 +342,7 @@ static void logger_log(enum LOGLEVEL l, FILE* stream, char* fmt, ...) {
 	case WARN:
 		fputs(WARN_CLR LOGGER_SRCNAME " WARN: ", stream);
 		break;
-	case ERROR:
+	case ERR:
 		fputs(ERROR_CLR LOGGER_SRCNAME " ERROR: ", stream);
 		break;
 	case DEBUG:
@@ -470,48 +505,75 @@ static ssize_t __secure_recv(struct netio* conn_io, void* buf, size_t num) {
 	return (ssize_t)readbytes;
 }
 
-#define LOAD_FUNC(func) \
-	dlsym(libssl.self, func); \
-	if((err = dlerror())) { \
-		error("Failed to load function " func " from libssl: %s\n", err); \
-		err = NULL; \
-		errcnt++; \
+#ifndef REQUESTS_USE_SSL_STATIC
+
+static void* __load_func(char* name, char** errptr) {
+	void* fn = dlsym(libssl.self, name);
+	if(!fn) {
+		*errptr = dlerror();
+		if((fn = dlsym(libssl.libcrypto, name))) {
+			*errptr = NULL;
+		} else {
+			dlerror();
+		}
 	}
+	return fn;
+}
+
+#define LOAD_FUNC(dst, func) \
+	do { \
+		char* err = NULL; \
+		dst = __load_func(#func, &err); \
+		if(err) { \
+			error("Failed to load function " #func " from libssl: %s\n", err); \
+			errcnt++; \
+		} \
+	} while(0);
+
+#else
+
+#define LOAD_FUNC(dst, func) \
+	dst = (void*)func
+
+#endif
 
 static void* load_ssl_functions(void) {
 	uint8_t errcnt = 0;
-	char* err = NULL;
-	if((libssl.libcrypto = dlopen("libcrypto.so", RTLD_LAZY | RTLD_GLOBAL)) == NULL) {
+	if((libssl.libcrypto = dlopen(LIBCRYPTO_NAME, RTLD_LAZY | RTLD_GLOBAL)) == NULL) {
 		error(FUNC_LINE_FMT "Failed to load libcrypto, libssl loading aborted: %s\n", __func__, __LINE__, dlerror());
 		return NULL;
 	}
-	if((libssl.self = dlopen("libssl.so", RTLD_LAZY)) == NULL) {
+	if((libssl.self = dlopen(LIBSSL_NAME, RTLD_LAZY)) == NULL) {
 		error(FUNC_LINE_FMT "Failed to load libssl: %s\n", __func__, __LINE__, dlerror());
 		dlclose(libssl.libcrypto);
 		libssl.libcrypto = NULL;
 		return NULL;
 	}
 
-	libssl.init = LOAD_FUNC("OPENSSL_init_ssl");
-	libssl.new = LOAD_FUNC("SSL_new");
-	libssl.ctx_new = LOAD_FUNC("SSL_CTX_new");
-	libssl.ctx_set_options = LOAD_FUNC("SSL_CTX_set_options");
-	libssl.client_method = LOAD_FUNC("TLS_client_method");
-	libssl.set_fd = LOAD_FUNC("SSL_set_fd");
-	libssl.connect = LOAD_FUNC("SSL_connect");
-	libssl.write = LOAD_FUNC("SSL_write_ex");
-	libssl.read = LOAD_FUNC("SSL_read_ex");
-	libssl.ctrl = LOAD_FUNC("SSL_ctrl");
-	libssl.set_verify = LOAD_FUNC("SSL_set_verify");
-	libssl.get_peer_certificate = LOAD_FUNC("SSL_get1_peer_certificate");
-	libssl.ctx_set_default_verify_paths = LOAD_FUNC("SSL_CTX_set_default_verify_paths");
-	libssl.get_verify_result = LOAD_FUNC("SSL_get_verify_result");
-	libssl.use_certificate_file = LOAD_FUNC("SSL_use_certificate_file");
-	libssl.free_ssl = LOAD_FUNC("SSL_free");
-	libssl.free_ssl_ctx = LOAD_FUNC("SSL_CTX_free");
-	libssl.free_x509 = LOAD_FUNC("X509_free");
+	LOAD_FUNC(libssl.init, OPENSSL_init_ssl);
+ 	LOAD_FUNC(libssl.new, SSL_new);
+	LOAD_FUNC(libssl.ctx_new, SSL_CTX_new);
+	LOAD_FUNC(libssl.ctx_set_options, SSL_CTX_set_options);
+	LOAD_FUNC(libssl.client_method, TLS_client_method);
+	LOAD_FUNC(libssl.set_fd, SSL_set_fd);
+	LOAD_FUNC(libssl.connect, SSL_connect);
+	LOAD_FUNC(libssl.write, SSL_write_ex);
+	LOAD_FUNC(libssl.read, SSL_read_ex);
+	LOAD_FUNC(libssl.ctrl, SSL_ctrl);
+	LOAD_FUNC(libssl.set_verify, SSL_set_verify);
+	LOAD_FUNC(libssl.get_peer_certificate, SSL_get1_peer_certificate);
+	LOAD_FUNC(libssl.ctx_set_default_verify_paths, SSL_CTX_set_default_verify_paths);
+	LOAD_FUNC(libssl.get_verify_result, SSL_get_verify_result);
+	LOAD_FUNC(libssl.use_certificate_file, SSL_use_certificate_file);
+	LOAD_FUNC(libssl.free_ssl, SSL_free);
+	LOAD_FUNC(libssl.free_ssl_ctx, SSL_CTX_free);
+	LOAD_FUNC(libssl.free_x509, X509_free);
+
 	if(errcnt > 0) {
-		error(FUNC_LINE_FMT "Failed to load %d functions from libssl\n", __func__, __LINE__);
+		error(FUNC_LINE_FMT "Failed to load %d functions from libssl\n", __func__, __LINE__, errcnt);
+		dlclose(libssl.libcrypto);
+		dlclose(libssl.self);
+		memset(&libssl, 0, sizeof(libssl));
 	} else {
 		info(FUNC_LINE_FMT "All libssl functions loaded successfully\n", __func__, __LINE__);
 	}
@@ -593,12 +655,11 @@ static int cistrncmp(const char* a, const char* b, int n) {
 }
 
 void header_add_sized(struct header* headers, char* key, size_t key_size, char* value, size_t value_size) {
-	char* key_clone = clone_string(key, key_size);
 	size_t n_entries = headers->num_entries;
 	headers->entries = reallocate(headers->entries, 
 			n_entries * sizeof(*headers->entries), (n_entries + 1) * sizeof(*headers->entries));
 	headers->num_entries++;
-	headers->entries[n_entries].name = key_clone;
+	headers->entries[n_entries].name = clone_string(key, key_size);
 	headers->entries[n_entries].value = clone_string(value, value_size);
 }
 
@@ -651,7 +712,7 @@ void free_response(struct response* freeptr) {
 }
 
 void netio_close(struct netio* freeptr) {
-	close(freeptr->socket);
+	closesocket(freeptr->socket);
 	if(freeptr->ssl) {
 		libssl.free_ssl(freeptr->ssl);
 	}
@@ -690,7 +751,7 @@ static int connect_to_host(struct url* url) {
       		if (connect(socket_fd, conn->ai_addr, conn->ai_addrlen) != -1)
          		break;
 
-        	close(socket_fd);
+        	closesocket(socket_fd);
         }
 
         freeaddrinfo(hostinfo);
@@ -734,7 +795,7 @@ static bool connect_secure(struct netio* io, char* vfy_hostname, char* certfile)
 		libssl.free_x509(server_cert);
 		long result = 0;
 		if((result = libssl.get_verify_result(io->ssl)) != X509_V_OK) {
-			error(FUNC_LINE_FMT "certificate verification failed, code %ld\n", result);
+			error(FUNC_LINE_FMT "certificate verification failed, code %ld\n", __func__, __LINE__, result);
 			goto cleanup;
 		}
 		io->send = __secure_send;
