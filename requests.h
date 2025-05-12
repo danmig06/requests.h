@@ -268,6 +268,9 @@ struct response* requests_options(char* url, struct request_options* options);
 
 void requests_set_log_level(enum LOGLEVEL mask);
 
+void requests_unload_ssl(void);
+void requests_free_ssl_context(void);
+
 struct header_entry* header_get(struct header* headers, char* key);
 char* header_get_value(struct header* headers, char* key);
 
@@ -396,6 +399,59 @@ static ssize_t __not_secure_send(struct netio* conn_io, void* buf, size_t num) {
 
 static ssize_t __not_secure_recv(struct netio* conn_io, void* buf, size_t num) { 
 	return recv(conn_io->socket, buf, num, 0);
+}
+
+struct netreader {
+	uint8_t*      buf;
+	ptrdiff_t     off;
+	size_t        len;
+	struct netio* io;
+	bool          eof;
+};
+
+static struct netreader net_rd_new(struct netio* io) {
+	struct netreader rd = { 0 };
+	rd.buf = malloc(REQUESTS_RECV_BUFSIZE);
+	rd.io = io;
+	return rd;
+}
+
+static void net_rd_refill(struct netreader* rd) {
+	if(!rd->eof) {
+		size_t len = rd->io->recv(rd->io, rd->buf, REQUESTS_RECV_BUFSIZE);	
+		if(len > 0) {
+			rd->len = len;
+		} else {
+			rd->eof = true;
+			rd->len = 0;
+		}
+		rd->off = 0;
+	}
+}
+
+static char net_rd_nextbyte(struct netreader* rd) {
+	if(rd->off == rd->len) {
+		net_rd_refill(rd);
+	}
+
+	if(rd->eof) {
+		return -1;
+	}
+
+	return rd->buf[rd->off++];
+}
+
+static size_t net_rd_recv(struct netreader* rd, uint8_t* mem, size_t n) {
+	char byte = '\0';
+	size_t i;
+	for(i = 0; i < n; i++) {
+		byte = net_rd_nextbyte(rd);
+		if(byte == -1) {
+			break;
+		}
+		mem[i] = byte;
+	}
+	return i;
 }
 
 /* ----------------------------------
@@ -551,7 +607,7 @@ static void* load_ssl_functions(void) {
 	}
 
 	LOAD_FUNC(libssl.init, OPENSSL_init_ssl);
- 	LOAD_FUNC(libssl.new, SSL_new);
+	LOAD_FUNC(libssl.new, SSL_new);
 	LOAD_FUNC(libssl.ctx_new, SSL_CTX_new);
 	LOAD_FUNC(libssl.ctx_set_options, SSL_CTX_set_options);
 	LOAD_FUNC(libssl.client_method, TLS_client_method);
@@ -630,6 +686,9 @@ static char* http_version_str(enum HTTPVER ver) {
 }
 
 static char* clone_string(char* src, int len) {
+	if(len == 0) {
+		return NULL;
+	}
 	char* dst = malloc(len + 1);
 	strncpy(dst, src, len);
 	dst[len] = '\0';
@@ -679,9 +738,12 @@ struct response* alloc_response(void) {
 }
 
 void free_header(struct header* freeptr) {
+	if(freeptr->entries == NULL || freeptr->num_entries <= 0) return;
 	for(size_t i = 0; i < freeptr->num_entries; i++) {
 		free(freeptr->entries[i].name);
-		free(freeptr->entries[i].value);
+		if(freeptr->entries[i].value != NULL) {
+			free(freeptr->entries[i].value);
+		}
 	}
 	free(freeptr->entries);
 }
@@ -695,16 +757,27 @@ struct url* clone_url(struct url* u) {
 	return new;
 }
 
+static void free_url_strings(struct url* freeptr) {
+	if(freeptr->route) {
+		free(freeptr->route);
+	}
+	if(freeptr->hostname) {
+		free(freeptr->hostname);
+	}
+}
+
 void free_url(struct url* freeptr) {
-	free(freeptr->route);
-	free(freeptr->hostname);
+	if(!freeptr) return;
+	free_url_strings(freeptr);
 	free(freeptr);
 }
 
 void free_response(struct response* freeptr) {
 	free_header(&freeptr->header);
 	free(freeptr->status_line);
-	free_url(freeptr->url);
+	if(freeptr->url) {
+		free_url(freeptr->url);
+	}
 	if(freeptr->body.data) {
 		free(freeptr->body.data);
 	}
@@ -715,6 +788,28 @@ void netio_close(struct netio* freeptr) {
 	closesocket(freeptr->socket);
 	if(freeptr->ssl) {
 		libssl.free_ssl(freeptr->ssl);
+	}
+}
+
+static void net_rd_close(struct netreader* rd) {
+	netio_close(rd->io);
+	free(rd->buf);
+	memset(rd, 0, sizeof(*rd));
+}
+
+void requests_free_ssl_context(void) {
+	if(g_ssl_ctx) {
+		libssl.free_ssl_ctx(g_ssl_ctx);
+		g_ssl_ctx = NULL;
+	}
+}
+
+void requests_unload_ssl(void) {
+	if(libssl.self) {
+		requests_free_ssl_context();
+		dlclose(libssl.libcrypto);
+		dlclose(libssl.self);
+		memset(&libssl, 0, sizeof(libssl));
 	}
 }
 
@@ -745,10 +840,10 @@ static int connect_to_host(struct url* url) {
 		socket_address->sin_port = htons(url->port);
 		debug(FUNC_LINE_FMT "found host ip: '%s'\n", __func__, __LINE__, inet_ntoa(socket_address->sin_addr));
         	socket_fd = socket(conn->ai_family, conn->ai_socktype, conn->ai_protocol);
-        	if (socket_fd == -1)
+        	if(socket_fd == -1)
         		continue;
 
-      		if (connect(socket_fd, conn->ai_addr, conn->ai_addrlen) != -1)
+		if(connect(socket_fd, conn->ai_addr, conn->ai_addrlen) != -1)
          		break;
 
         	closesocket(socket_fd);
@@ -757,7 +852,8 @@ static int connect_to_host(struct url* url) {
         freeaddrinfo(hostinfo);
 
         if(conn == NULL) {
-        	error(FUNC_LINE_FMT "Failed to connect to %s://%s%s:%d\n", __func__, __LINE__, (url->protocol == HTTP) ? "http" : "https", url->hostname, url->route, url->port);
+        	error(FUNC_LINE_FMT "Failed to connect to %s://%s:%d%s\n", 
+				__func__, __LINE__, (url->protocol == HTTP) ? "http" : "https", url->hostname, url->port, url->route);
 		return -1;
         }
 	return socket_fd;
@@ -866,13 +962,28 @@ void header_add_str(struct header* headers, char* header_str) {
 	name = header_str;
 	name_end = strchr(name, ':');
 	if(!name_end) {
-		warn(FUNC_LINE_FMT "Header string is missing ':'", __func__, __LINE__);
+		warn(FUNC_LINE_FMT "Header string is missing ':'\n", __func__, __LINE__);
 		return;
 	}
 	name_size = name_end - name;
-	value = name_end + STATIC_STRSIZE(": ");
-	value_end = &value[strlen(value)];
-	value_size = value_end - value;
+	value = name_end + 1;
+	while(*value == ' ') {
+		value++;
+	}
+	if(*value == '\0') {
+		warn(FUNC_LINE_FMT "Header string has no value\n", __func__, __LINE__);
+		return;
+	}
+
+	value_end = &value[strlen(value) - 1];
+	if(value_end >= value) {
+		while(*value_end == ' ') {
+			value_end--;
+		}
+		value_size = (value_end + 1) - value;
+	} else {
+		value_size = 0;
+	}
 	header_add_sized(headers, name, name_size, value, value_size);
 }
 
@@ -992,14 +1103,14 @@ char* header_get_value(struct header* headers, char* key) {
 	return NULL;
 }
 
-static char* retrieve_raw_headers(struct netio* io) {
+static char* retrieve_raw_headers(struct netreader* rd) {
 	char matchstr[] = "\r\n\r\n";
 	uint8_t received = 0;
 	char* buf = NULL;
 	int match_counter = 0;
-	int buf_idx = 0;
+	uint64_t buf_idx = 0;
 	char current_byte = '\0';
-	while((received = io->recv(io, &current_byte, 1))) {
+	while((received = net_rd_recv(rd, &current_byte, 1))) {
 		if(matchstr[match_counter] == current_byte) {
 			match_counter++;
 		} else {
@@ -1009,12 +1120,11 @@ static char* retrieve_raw_headers(struct netio* io) {
 		buf[buf_idx] = current_byte;
 		buf_idx++;
 		if(match_counter == STATIC_STRSIZE(matchstr)) {
-			char* term_headers = clone_string(buf, buf_idx);
-			free(buf);
-			buf = term_headers;
 			break;
 		}
 	}
+	buf = reallocate(buf, buf_idx, buf_idx + 1);
+	buf[buf_idx] = '\0';
 	return buf;
 }
 
@@ -1030,14 +1140,16 @@ static char* parse_headers(struct response* resp, char* raw_headers) {
 			break;
 		}
 		header_add_str(&resp->header, line);
-		debug(FUNC_LINE_FMT "parsed header: {\n\tname: \"%s\",\n\tvalue: \"%s\"\n}\n", __func__, __LINE__, 
+		if(resp->header.num_entries > 0) {
+			debug(FUNC_LINE_FMT "parsed header: {\n\tname: \"%s\",\n\tvalue: \"%s\"\n}\n", __func__, __LINE__, 
 				resp->header.entries[resp->header.num_entries - 1].name, resp->header.entries[resp->header.num_entries - 1].value);
+		}
 		free(line);
 	}
 	return endptr;
 }
 
-static uint64_t get_chunk_length(struct netio* io) {
+static uint64_t get_chunk_length(struct netreader* rd) {
 	uint64_t len = 0;
 	char current_byte = '\0';
 	uint8_t match_counter = 0;
@@ -1045,7 +1157,7 @@ static uint64_t get_chunk_length(struct netio* io) {
 	uint8_t received = 0;
 	size_t buf_idx = 0;
 	char* buf = NULL;
-	while((received = io->recv(io, &current_byte, 1))) {
+	while((received = net_rd_recv(rd, &current_byte, 1))) {
 		if(sequence[match_counter] == current_byte) {
 			match_counter++;
 		} else {
@@ -1066,8 +1178,8 @@ static uint64_t get_chunk_length(struct netio* io) {
 	return len;
 }
 
-static struct response* retrieve_response(struct netio* io, struct ostream* outstream) {
-	char* raw_headers = retrieve_raw_headers(io);
+static struct response* retrieve_response(struct netreader* rd, struct ostream* outstream) {
+	char* raw_headers = retrieve_raw_headers(rd);
 	if(raw_headers == NULL) {
 		return NULL;
 	}
@@ -1080,13 +1192,14 @@ static struct response* retrieve_response(struct netio* io, struct ostream* outs
 	}
 	uint8_t transfer_mode = determine_transfer_mode(&resp->header, &content_length);
 	if(transfer_mode == __TRANSFER_MODE_NODATA) {
+		outstream->close(outstream);
 		return resp;
 	}
 	int bytes_received = 0;
 	char buf[REQUESTS_RECV_BUFSIZE] = { 0 };
 	switch(transfer_mode) {
 	case __TRANSFER_MODE_SIZED: {
-		while(content_length > 0 && (bytes_received = io->recv(io, buf, MIN(content_length, REQUESTS_RECV_BUFSIZE))) > 0) {
+		while(content_length > 0 && (bytes_received = net_rd_recv(rd, buf, MIN(content_length, REQUESTS_RECV_BUFSIZE))) > 0) {
 			outstream->write(outstream, buf, bytes_received);
 			content_length -= bytes_received;
 		}
@@ -1095,16 +1208,16 @@ static struct response* retrieve_response(struct netio* io, struct ostream* outs
 	case __TRANSFER_MODE_CHUNKED: {
 		char endbuf[3] = {0};
 		while(1) {
-			content_length = get_chunk_length(io);
+			content_length = get_chunk_length(rd);
 			if(content_length == 0) {
-				io->recv(io, endbuf, 2);
+				net_rd_recv(rd, endbuf, 2);
 				break;
 			}
-			while(content_length > 0 && (bytes_received = io->recv(io, buf, MIN(content_length, REQUESTS_RECV_BUFSIZE))) > 0) {
+			while(content_length > 0 && (bytes_received = net_rd_recv(rd, buf, MIN(content_length, REQUESTS_RECV_BUFSIZE))) > 0) {
 				outstream->write(outstream, buf, bytes_received);
 				content_length -= bytes_received;
 			}
-			io->recv(io, endbuf, 2);
+			net_rd_recv(rd, endbuf, 2);
 		}
 		break;
 	}
@@ -1129,7 +1242,13 @@ static void do_request(struct netio* io, struct url* host_url, enum REQUEST_METH
 		send_format(io, "\r\n");
 	}
 	if(have_to_send_body) {
-		io->send(io, options->body.data, options->body.size);
+		size_t bytes_left = options->body.size;
+		size_t buf_idx = 0;
+		size_t bytes_received = 0;
+		while(bytes_left > 0 && (bytes_received = io->send(io, &(options->body.data[buf_idx]), bytes_left)) > 0) {
+			bytes_left -= bytes_received;
+			buf_idx += bytes_received;
+		}
 	}
 }
 
@@ -1137,30 +1256,35 @@ static struct response* perform_request(char* url_str, enum REQUEST_METHOD metho
 	struct url host_url = { 0 };
 	struct netio conn_io = { .ssl = NULL, .send = __not_secure_send, .recv = __not_secure_recv };
 	host_url = OPTION(options, url) ? *options->url : resolve_url(url_str);	
+	struct response* resp = NULL;
 	
 	if((conn_io.socket = connect_to_host(&host_url)) < 0) {
 		error(FUNC_LINE_FMT "Failed to create socket\n", __func__, __LINE__);
-		return NULL;
+		goto freeurl;
 	}
 	if(!OPTION(options, disable_ssl) && host_url.protocol == HTTPS) {
 		char* certfile = OPTION(options, cert) ? options->cert : NULL;
 		if(!connect_secure(&conn_io, host_url.hostname, certfile)) {
-			return NULL;
+			goto freeurl;
 		}
 	}
 
 	do_request(&conn_io, &host_url, method, options);
-	struct response* resp = retrieve_response(&conn_io, outstream);
+
+	struct netreader conn_reader = net_rd_new(&conn_io);
+	resp = retrieve_response(&conn_reader, outstream);
 	if(!resp) {
 		error(FUNC_LINE_FMT "no response from '%s'", __func__, __LINE__, host_url.hostname);
-		return NULL;
+	} else {
+		resp->url = clone_url(&host_url);
 	}
-	resp->url = clone_url(&host_url);
+
+	net_rd_close(&conn_reader);
+
+freeurl:
 	if(!OPTION(options, url)) {
-		free(host_url.route);
-		free(host_url.hostname);
+		free_url_strings(&host_url);
 	}
-	netio_close(&conn_io);
 	return resp;
 }
 
