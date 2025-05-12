@@ -429,27 +429,31 @@ static void net_rd_refill(struct netreader* rd) {
 	}
 }
 
-static char net_rd_nextbyte(struct netreader* rd) {
+static uint8_t net_rd_nextbyte(struct netreader* rd) {
 	if(rd->off == rd->len) {
 		net_rd_refill(rd);
 	}
 
 	if(rd->eof) {
-		return -1;
+		return 0;
 	}
 
 	return rd->buf[rd->off++];
 }
 
+static bool net_rd_eof(struct netreader* rd) {
+	return rd->eof;
+}
+
 static size_t net_rd_recv(struct netreader* rd, uint8_t* mem, size_t n) {
-	char byte = '\0';
+	uint8_t byte = 0;
 	size_t i;
 	for(i = 0; i < n; i++) {
 		byte = net_rd_nextbyte(rd);
-		if(byte == -1) {
+		if(net_rd_eof(rd)) {
 			break;
 		}
-		mem[i] = byte;
+		mem[i] = byte & 0xff;
 	}
 	return i;
 }
