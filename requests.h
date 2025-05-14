@@ -24,9 +24,7 @@
  */
 
 /*	TODO:
- *		- URL parameter parsing
  *		- User download callback
- *		- automatic filename detection on NULL filename
  *		- maybe Input Stream system
  */
 
@@ -87,7 +85,7 @@ char* dlerror() {
 
 #define LOGGER_SRCNAME "[requests.h]" 
 #define FUNC_LINE_FMT "%s():%d: "
-#define REQUESTS_RECV_BUFSIZE 1024 * 256 
+#define REQUESTS_RECV_BUFSIZE 1024 * 32 
 #define STATIC_STRSIZE(str) (sizeof(str) - 1)
 #define MIN(x, y) ((x < y) ? x : y)
 #define OPTION(s, m) (s && (s)->m)
@@ -207,11 +205,23 @@ struct __sized_buf {
 	size_t size;
 };
 
+struct parameter {
+	char* name;
+	char* value;
+};
+
+struct params {
+	char* repr;
+	struct parameter* params;
+	size_t num_params;
+};
+
 struct url {
 	enum PROTOCOL protocol;
 	char* hostname;
 	char* route;
 	short port;
+	struct params* params;
 };
 
 struct header_entry {
@@ -227,6 +237,7 @@ struct header {
 struct request_options {
 	struct __sized_buf body;
 	bool disable_ssl;
+	bool ignore_verification;
 	enum HTTPVER http_version;
 	struct header header;
 	struct url* url;
@@ -244,11 +255,18 @@ struct response {
 };
 
 struct url resolve_url(char* url_str);
+char* url_get_filename(struct url* url);
 struct url* clone_url(struct url* u);
 
 void header_add_sized(struct header* headers, char* key, size_t key_size, char* value, size_t value_size);
 void header_add(struct header* headers, char* key, char* value);
 void header_add_str(struct header* headers, char* header_str);
+struct header_entry* header_get(struct header* headers, char* key);
+char* header_get_value(struct header* headers, char* key);
+
+struct params* parse_query_string(char* str);
+struct parameter* params_get(struct params* params, char* key);
+char* params_get_value(struct params* params, char* key);
 
 struct response* requests_get(char* url, struct request_options* options);
 struct response* requests_get_file(char* url, char* filename, struct request_options* options);
@@ -270,9 +288,6 @@ void requests_set_log_level(enum LOGLEVEL mask);
 
 void requests_unload_ssl(void);
 void requests_free_ssl_context(void);
-
-struct header_entry* header_get(struct header* headers, char* key);
-char* header_get_value(struct header* headers, char* key);
 
 struct response* alloc_response(void);
 void free_response(struct response* freeptr);
@@ -403,7 +418,7 @@ static ssize_t __not_secure_recv(struct netio* conn_io, void* buf, size_t num) {
 
 struct netreader {
 	uint8_t*      buf;
-	ptrdiff_t     off;
+	size_t        off;
 	size_t        len;
 	struct netio* io;
 	bool          eof;
@@ -441,19 +456,20 @@ static uint8_t net_rd_nextbyte(struct netreader* rd) {
 	return rd->buf[rd->off++];
 }
 
-static bool net_rd_eof(struct netreader* rd) {
+static inline bool net_rd_eof(struct netreader* rd) {
 	return rd->eof;
 }
 
-static size_t net_rd_recv(struct netreader* rd, uint8_t* mem, size_t n) {
+static size_t net_rd_recv(struct netreader* rd, void* mem, size_t n) {
 	uint8_t byte = 0;
+	uint8_t* buf = mem;
 	size_t i;
 	for(i = 0; i < n; i++) {
 		byte = net_rd_nextbyte(rd);
 		if(net_rd_eof(rd)) {
 			break;
 		}
-		mem[i] = byte & 0xff;
+		buf[i] = byte;
 	}
 	return i;
 }
@@ -742,7 +758,7 @@ struct response* alloc_response(void) {
 }
 
 void free_header(struct header* freeptr) {
-	if(freeptr->entries == NULL || freeptr->num_entries <= 0) return;
+	if(!freeptr || freeptr->entries == NULL) return;
 	for(size_t i = 0; i < freeptr->num_entries; i++) {
 		free(freeptr->entries[i].name);
 		if(freeptr->entries[i].value != NULL) {
@@ -752,13 +768,60 @@ void free_header(struct header* freeptr) {
 	free(freeptr->entries);
 }
 
+struct params* clone_params(struct params* p) {
+	struct params* new = malloc(sizeof(*new));
+	new->num_params = p->num_params;
+	new->params = malloc(new->num_params * sizeof(*new->params));
+	for(size_t i = 0; i < new->num_params; i++) {
+		new->params[i].name = clone_string(p->params[i].name, strlen(p->params[i].name));
+		new->params[i].value = clone_string(p->params[i].value, strlen(p->params[i].value));
+	}
+	new->repr = clone_string(p->repr, strlen(p->repr));
+	return new;
+}
+
 struct url* clone_url(struct url* u) {
 	struct url* new = malloc(sizeof(*new));
 	new->port = u->port;
 	new->protocol = u->protocol;
 	new->route = clone_string(u->route, strlen(u->route));
 	new->hostname = clone_string(u->hostname, strlen(u->hostname));
+	new->params = NULL;
+	if(u->params) {
+		new->params = clone_params(u->params);
+	}
 	return new;
+}
+
+char* url_get_filename(struct url* url) {
+	char* filename = NULL;
+	if(url->route) {
+		char* destination = strrchr(url->route, '/');
+		if(!destination) {
+			return NULL;
+		}
+
+		destination++;
+		if(*destination != '\0') {
+			filename = destination;
+		}
+	}
+	return filename;
+}
+
+void free_params(struct params* freeptr) {
+	if(!freeptr || freeptr->params == NULL) return;
+	if(freeptr->repr) {
+		free(freeptr->repr);
+	}
+
+	for(size_t i = 0; i < freeptr->num_params; i++) {
+		free(freeptr->params[i].name);
+		if(freeptr->params[i].value != NULL) {
+			free(freeptr->params[i].value);
+		}
+	}
+	free(freeptr->params);
 }
 
 static void free_url_strings(struct url* freeptr) {
@@ -773,7 +836,10 @@ static void free_url_strings(struct url* freeptr) {
 void free_url(struct url* freeptr) {
 	if(!freeptr) return;
 	free_url_strings(freeptr);
-	free(freeptr);
+	if(freeptr->params) {
+		free_params(freeptr->params);
+		free(freeptr->params);
+	}
 }
 
 void free_response(struct response* freeptr) {
@@ -781,6 +847,7 @@ void free_response(struct response* freeptr) {
 	free(freeptr->status_line);
 	if(freeptr->url) {
 		free_url(freeptr->url);
+		free(freeptr->url);
 	}
 	if(freeptr->body.data) {
 		free(freeptr->body.data);
@@ -863,7 +930,7 @@ static int connect_to_host(struct url* url) {
 	return socket_fd;
 }
 
-static bool connect_secure(struct netio* io, char* vfy_hostname, char* certfile) {
+static bool connect_secure(struct netio* io, char* vfy_hostname, char* certfile, bool ignore_vfy) {
 	if(io->socket < 0) return false;
 	if(!libssl.self) {
 		if(!load_ssl_functions()) {
@@ -896,7 +963,9 @@ static bool connect_secure(struct netio* io, char* vfy_hostname, char* certfile)
 		long result = 0;
 		if((result = libssl.get_verify_result(io->ssl)) != X509_V_OK) {
 			error(FUNC_LINE_FMT "certificate verification failed, code %ld\n", __func__, __LINE__, result);
-			goto cleanup;
+			if(!ignore_vfy) {
+				goto cleanup;
+			}
 		}
 		io->send = __secure_send;
 		io->recv = __secure_recv;
@@ -947,11 +1016,15 @@ static void send_content_length(struct netio* io, uint64_t content_length) {
 	send_format(io, "Content-Length: %zu\r\n", content_length);
 }
 
-static void send_request_line(struct netio* io, enum REQUEST_METHOD method, enum HTTPVER version, char* location) {
+static void send_request_line(struct netio* io, enum REQUEST_METHOD method, enum HTTPVER version, struct url* host_url) {
 	char* method_str = method_to_str(method);
 	char* ver = http_version_str(version);
+	char* get_params = "";
+	if((host_url->params && host_url->params->repr != NULL) && method == GET) {
+		get_params = host_url->params->repr;
+	}
 
-	send_format(io, "%s %s %s\r\n", method_str, location, ver);
+	send_format(io, "%s %s%s %s\r\n", method_str, host_url->route, get_params, ver);
 }
 
 /* ----------------------------------
@@ -1007,6 +1080,50 @@ static char* parse_status_line(char* status_line, enum HTTPSTATUS* status_code) 
 	return reason_str;
 }
 
+static char* parse_query_pair(struct params* p, char* pair) {
+	char* equal_sign = NULL;
+	char* pair_end = NULL;
+	char* value = NULL;
+	size_t name_size = 0;
+	size_t value_size = 0;
+	size_t param_idx = 0;
+	if(!(pair_end = strchr(pair, '&'))) {
+		pair_end = &pair[strlen(pair)];
+	}
+
+	if((equal_sign = strchr(pair, '=')) && equal_sign < pair_end) {
+		param_idx = p->num_params;
+		name_size = (equal_sign - pair);
+		if(name_size <= 0) {
+			return pair_end;
+		}
+		value = equal_sign + 1;
+		value_size = (pair_end - value);
+
+		p->params = reallocate(p->params, (param_idx) * sizeof(*p->params), (param_idx + 1) * sizeof(*p->params));
+
+		p->params[param_idx].name = clone_string(pair, name_size);
+		p->params[param_idx].value = clone_string(value, value_size);
+		
+		p->num_params++;
+
+		debug(FUNC_LINE_FMT "parsed query pair: {\n\tname: \"%s\"\n\tvalue: \"%s\"\n}\n", 
+				__func__, __LINE__, p->params[param_idx].name, p->params[param_idx].value);
+	}
+
+	return pair_end;
+}
+
+struct params* parse_query_string(char* str) {
+	struct params* params = malloc(sizeof(*params));
+	memset(params, 0, sizeof(*params));
+	char* pair_begin = str;
+	while(*pair_begin) {
+		pair_begin = parse_query_pair(params, pair_begin + 1);
+	}
+	return params;
+}
+
 struct url resolve_url(char* url_str) {
   	struct url host_url = { .protocol = HTTP, .port = 80 };
 	if(!url_str) {
@@ -1030,11 +1147,28 @@ struct url resolve_url(char* url_str) {
 	char* hostname = (protocol_end != NULL) ? protocol_end + STATIC_STRSIZE("://") : url_str;
 	size_t hostname_size;
 	char* route_begin = strchr(hostname, '/');
+	char* params_begin = NULL;
 	if(route_begin != NULL) {
+		size_t route_size = 0;
 		hostname_size = (route_begin - hostname);
-		host_url.route = clone_string(route_begin, strlen(route_begin));
+		if((params_begin = strchr(route_begin, '?'))) {
+			route_size = (params_begin - route_begin);
+			host_url.params = parse_query_string(params_begin);
+			host_url.params->repr = clone_string(params_begin, strlen(params_begin));
+		} else {
+			route_size = strlen(route_begin);
+		}
+		
+		host_url.route = clone_string(route_begin, route_size);
 	} else {
-		hostname_size = strlen(hostname);
+		if((params_begin = strchr(hostname, '?'))) {
+			hostname_size = (params_begin - hostname);
+			host_url.params = parse_query_string(params_begin);
+			host_url.params->repr = clone_string(params_begin, strlen(params_begin));
+		} else {
+			hostname_size = strlen(hostname);
+		}
+
 		host_url.route = clone_string("/", STATIC_STRSIZE("/"));
 	}
 
@@ -1103,6 +1237,22 @@ char* header_get_value(struct header* headers, char* key) {
 	struct header_entry* e = NULL;
 	if((e = header_get(headers, key))) {
 		return e->value;
+	}
+	return NULL;
+}
+
+struct parameter* params_get(struct params* params, char* key) {
+	for(size_t i = 0; i < params->num_params; i++) {
+		if(strcmp(params->params[i].name, key) == 0)
+			return &params->params[i];
+	}
+	return NULL;
+}
+
+char* params_get_value(struct params* params, char* key) {
+	struct parameter* p = NULL;
+	if((p = params_get(params, key))) {
+		return p->value;
 	}
 	return NULL;
 }
@@ -1232,7 +1382,7 @@ static struct response* retrieve_response(struct netreader* rd, struct ostream* 
 
 static void do_request(struct netio* io, struct url* host_url, enum REQUEST_METHOD method, struct request_options* options) {
 	bool have_to_send_body = OPTION(options, body.data) && (method == POST || method == PUT);
-	send_request_line(io, method, (options) ? options->http_version : HTTP_1_1, host_url->route);
+	send_request_line(io, method, (options) ? options->http_version : HTTP_1_1, host_url);
 	if(options) {
 		if(!header_get_value(&options->header, "host")) {
 			send_host_header(io, host_url);
@@ -1268,7 +1418,7 @@ static struct response* perform_request(char* url_str, enum REQUEST_METHOD metho
 	}
 	if(!OPTION(options, disable_ssl) && host_url.protocol == HTTPS) {
 		char* certfile = OPTION(options, cert) ? options->cert : NULL;
-		if(!connect_secure(&conn_io, host_url.hostname, certfile)) {
+		if(!connect_secure(&conn_io, host_url.hostname, certfile, OPTION(options, ignore_verification))) {
 			goto freeurl;
 		}
 	}
@@ -1287,7 +1437,7 @@ static struct response* perform_request(char* url_str, enum REQUEST_METHOD metho
 
 freeurl:
 	if(!OPTION(options, url)) {
-		free_url_strings(&host_url);
+		free_url(&host_url);
 	}
 	return resp;
 }
