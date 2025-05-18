@@ -170,6 +170,7 @@ enum HTTPSTATUS {
 };
 
 enum PROTOCOL {
+	NO_PROTOCOL = 0,
 	HTTP,
 	HTTPS
 };
@@ -256,7 +257,8 @@ struct response {
 
 struct url resolve_url(char* url_str);
 char* url_get_filename(struct url* url);
-struct url* clone_url(struct url* u);
+struct url url_redirect(struct url* current, char* location);
+struct url clone_url(struct url* u);
 
 void header_add_sized(struct header* headers, char* key, size_t key_size, char* value, size_t value_size);
 void header_add(struct header* headers, char* key, char* value);
@@ -286,12 +288,14 @@ struct response* requests_options(char* url, struct request_options* options);
 
 void requests_set_log_level(enum LOGLEVEL mask);
 
+SSL_CTX* requests_get_ssl_context(void);
 void requests_unload_ssl(void);
 void requests_free_ssl_context(void);
 
 struct response* alloc_response(void);
 void free_response(struct response* freeptr);
 void free_header(struct header* freeptr);
+void free_url(struct url* freeptr);
 
 /* ------------------------------------------------------------------------------------------------------
  |				     									 |
@@ -491,7 +495,6 @@ struct ostream {
 	osclosefunc_t close;
 };
 
-
 static size_t __os_write_file(struct ostream* os, void* buf, size_t num);
 static size_t __os_write_buf(struct ostream* os, void* buf, size_t num); 
 static void __os_close_file(struct ostream* os);
@@ -671,6 +674,10 @@ static SSL_CTX* init_ssl_context(void) {
 	return g_ssl_ctx;
 }
 
+SSL_CTX* requests_get_ssl_context(void) {
+	return g_ssl_ctx;
+}
+
 /* ----------------------------------
  |				     |
  |	  utility functions          |
@@ -780,17 +787,36 @@ struct params* clone_params(struct params* p) {
 	return new;
 }
 
-struct url* clone_url(struct url* u) {
-	struct url* new = malloc(sizeof(*new));
-	new->port = u->port;
-	new->protocol = u->protocol;
-	new->route = clone_string(u->route, strlen(u->route));
-	new->hostname = clone_string(u->hostname, strlen(u->hostname));
-	new->params = NULL;
+struct url clone_url(struct url* u) {
+	struct url new = { 0 };
+	new.port = u->port;
+	new.protocol = u->protocol;
+	if(u->route) {
+		new.route = clone_string(u->route, strlen(u->route));
+	}
+	if(u->hostname) {
+		new.hostname = clone_string(u->hostname, strlen(u->hostname));
+	}
 	if(u->params) {
-		new->params = clone_params(u->params);
+		new.params = clone_params(u->params);
 	}
 	return new;
+}
+
+struct url url_redirect(struct url* current, char* location) {
+	if(!location) return (struct url){ 0 };
+	if(location[0] == '/') {
+		struct url src = *current;
+		src.route = NULL;
+		src.params = NULL;
+		struct url new = clone_url(&src);
+		struct url redirect = resolve_url(location);
+		new.route = redirect.route;
+		new.params = redirect.params;
+		return new;
+	} else {
+		return resolve_url(location);
+	}
 }
 
 char* url_get_filename(struct url* url) {
@@ -807,6 +833,25 @@ char* url_get_filename(struct url* url) {
 		}
 	}
 	return filename;
+}
+
+static void recv_data_buffered(struct netreader* rd, struct ostream* outstream, uint64_t data_length) {
+	char buf[REQUESTS_RECV_BUFSIZE] = { 0 };
+	uint64_t bytes_received = 0;
+	while(data_length > 0 && (bytes_received = net_rd_recv(rd, buf, MIN(data_length, REQUESTS_RECV_BUFSIZE))) > 0) {
+		outstream->write(outstream, buf, bytes_received);
+		data_length -= bytes_received;
+	}
+}
+
+static void send_data_buffered(struct netio* io, struct __sized_buf* buffer) {
+	size_t bytes_left = buffer->size;
+	size_t buf_idx = 0;
+	size_t bytes_sent = 0;
+	while(bytes_left > 0 && (bytes_sent = io->send(io, &(buffer->data[buf_idx]), bytes_left)) > 0) {
+		bytes_left -= bytes_sent;
+		buf_idx += bytes_sent;
+	}
 }
 
 void free_params(struct params* freeptr) {
@@ -984,16 +1029,16 @@ cleanup:
  |				     |
   ---------------------------------- */
 
-static ssize_t send_format(struct netio* io, const char* fmt, ...) {
+static void send_format(struct netio* io, const char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
-	int str_len = vsnprintf(NULL, 0, fmt, args);
-	char* string = malloc(str_len + 1);
+	struct __sized_buf string = { 0 };
+	string.size = vsnprintf(NULL, 0, fmt, args);
+	string.data = malloc(string.size + 1);
 	va_start(args, fmt);
-	vsnprintf(string, str_len + 1, fmt, args);
-	ssize_t bytes_sent = io->send(io, string, str_len);
-	free(string);
-	return bytes_sent;
+	vsnprintf(string.data, string.size + 1, fmt, args);
+	send_data_buffered(io, &string);
+	free(string.data);
 }
 
 static void send_headers(struct netio* io, struct header* headers) {
@@ -1174,7 +1219,7 @@ struct url resolve_url(char* url_str) {
 
 	char* port_str = NULL;
 	host_url.hostname = clone_string(hostname, hostname_size);
-	if((port_str = strchr(host_url.hostname, ':')) != NULL) {
+	if(host_url.hostname && (port_str = strchr(host_url.hostname, ':')) != NULL) {
 		short port = strtol(port_str + 1, NULL, 10);
 		if(errno == 0 && port >= 0) {
 			host_url.port = port;
@@ -1349,30 +1394,19 @@ static struct response* retrieve_response(struct netreader* rd, struct ostream* 
 		outstream->close(outstream);
 		return resp;
 	}
-	int bytes_received = 0;
-	char buf[REQUESTS_RECV_BUFSIZE] = { 0 };
+
 	switch(transfer_mode) {
 	case __TRANSFER_MODE_SIZED: {
-		while(content_length > 0 && (bytes_received = net_rd_recv(rd, buf, MIN(content_length, REQUESTS_RECV_BUFSIZE))) > 0) {
-			outstream->write(outstream, buf, bytes_received);
-			content_length -= bytes_received;
-		}
+		recv_data_buffered(rd, outstream, content_length);
 		break;
 	}
 	case __TRANSFER_MODE_CHUNKED: {
 		char endbuf[3] = {0};
-		while(1) {
+		do {
 			content_length = get_chunk_length(rd);
-			if(content_length == 0) {
-				net_rd_recv(rd, endbuf, 2);
-				break;
-			}
-			while(content_length > 0 && (bytes_received = net_rd_recv(rd, buf, MIN(content_length, REQUESTS_RECV_BUFSIZE))) > 0) {
-				outstream->write(outstream, buf, bytes_received);
-				content_length -= bytes_received;
-			}
+			recv_data_buffered(rd, outstream, content_length);
 			net_rd_recv(rd, endbuf, 2);
-		}
+		} while(content_length > 0);
 		break;
 	}
 	}
@@ -1396,13 +1430,7 @@ static void do_request(struct netio* io, struct url* host_url, enum REQUEST_METH
 		send_format(io, "\r\n");
 	}
 	if(have_to_send_body) {
-		size_t bytes_left = options->body.size;
-		size_t buf_idx = 0;
-		size_t bytes_received = 0;
-		while(bytes_left > 0 && (bytes_received = io->send(io, &(options->body.data[buf_idx]), bytes_left)) > 0) {
-			bytes_left -= bytes_received;
-			buf_idx += bytes_received;
-		}
+		send_data_buffered(io, &options->body);
 	}
 }
 
@@ -1414,11 +1442,17 @@ static struct response* perform_request(char* url_str, enum REQUEST_METHOD metho
 	
 	if((conn_io.socket = connect_to_host(&host_url)) < 0) {
 		error(FUNC_LINE_FMT "Failed to create socket\n", __func__, __LINE__);
+		if(outstream) {
+			outstream->close(outstream);
+		}
 		goto freeurl;
 	}
 	if(!OPTION(options, disable_ssl) && host_url.protocol == HTTPS) {
 		char* certfile = OPTION(options, cert) ? options->cert : NULL;
 		if(!connect_secure(&conn_io, host_url.hostname, certfile, OPTION(options, ignore_verification))) {
+			if(outstream) {
+				outstream->close(outstream);
+			}
 			goto freeurl;
 		}
 	}
@@ -1430,7 +1464,9 @@ static struct response* perform_request(char* url_str, enum REQUEST_METHOD metho
 	if(!resp) {
 		error(FUNC_LINE_FMT "no response from '%s'", __func__, __LINE__, host_url.hostname);
 	} else {
-		resp->url = clone_url(&host_url);
+		resp->url = malloc(sizeof(*resp->url));
+		memset(resp->url, 0, sizeof(*resp->url));
+		*resp->url = clone_url(&host_url);
 	}
 
 	net_rd_close(&conn_reader);
@@ -1530,6 +1566,7 @@ struct response* requests_put_fileptr(char* url, FILE* file, struct request_opti
 struct response* requests_options(char* url, struct request_options* options) {
 	return perform_request(url, OPTIONS, NULL, options);
 }
+
 #undef REQUESTS_IMPLEMENTATION
 #endif // #ifdef REQUESTS_IMPLEMENTATION
 
