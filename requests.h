@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include <ctype.h>
 #include <stdarg.h>
 #include <errno.h>
@@ -59,10 +60,10 @@
 #define dlopen(name, flags) LoadLibraryA(name)
 #define dlsym(lib, name) (void*)GetProcAddress(lib, name)
 #define dlclose(lib) FreeLibrary(lib)
-#define LIBCRYPTO_NAME "libcrypto-3-x64.dll"
-#define LIBSSL_NAME "libssl-3-x64.dll"
+#define LIBCRYPTO_NAME "libcrypto.dll"
+#define LIBSSL_NAME "libssl.dll"
 
-static char windows_errbuf[65536] = {0};
+static char windows_errbuf[256] = {0};
 char* dlerror() {
 	DWORD err = GetLastError();
 	if(!err) {
@@ -101,6 +102,8 @@ extern "C" {
   ---------------------------------- */
 
 enum HTTPSTATUS {
+    NO_STATUS_CODE = 0,
+
     CONTINUE = 100,
     SWITCHING_PROTOCOLS = 101,
     PROCESSING = 102,
@@ -235,6 +238,16 @@ struct header {
 	size_t num_entries;
 };
 
+struct download_state {
+	uint64_t bytes_received;
+	uint64_t bytes_left;
+	struct __sized_buf buffer;
+	const uint64_t content_length;
+	const enum HTTPSTATUS status_code;
+};
+
+typedef void (*requests_user_cb_t)(struct download_state*, void*);
+
 struct request_options {
 	struct __sized_buf body;
 	bool disable_ssl;
@@ -242,7 +255,8 @@ struct request_options {
 	enum HTTPVER http_version;
 	struct header header;
 	struct url* url;
-	char* params;
+	requests_user_cb_t data_callback;
+	void* user_data;
 	char* cert;
 };
 
@@ -269,6 +283,11 @@ char* header_get_value(struct header* headers, char* key);
 struct params* parse_query_string(char* str);
 struct parameter* params_get(struct params* params, char* key);
 char* params_get_value(struct params* params, char* key);
+
+struct response* requests_perform(char* url, enum REQUEST_METHOD method, struct request_options* options);
+struct response* requests_perform_file(char* url, char* filename, enum REQUEST_METHOD method, struct request_options* options);
+struct response* requests_perform_fileptr(char* url, FILE* file, enum REQUEST_METHOD method, struct request_options* options);
+struct response* requests_perform_no_body(char* url, enum REQUEST_METHOD method, struct request_options* options);
 
 struct response* requests_get(char* url, struct request_options* options);
 struct response* requests_get_file(char* url, char* filename, struct request_options* options);
@@ -537,8 +556,10 @@ static void __os_close_file(struct ostream* os) {
 
 static void __os_close_buf(struct ostream* os) {
 	struct __sized_buf* b = os->object;
-	b->data = reallocate(b->data, b->size, b->size + 1);
-	b->data[b->size] = '\0';
+	if(b->data != NULL) {
+		b->data = reallocate(b->data, b->size, b->size + 1);
+		b->data[b->size] = '\0';
+	}
 	memset(os, 0, sizeof(*os));
 }
 
@@ -835,12 +856,16 @@ char* url_get_filename(struct url* url) {
 	return filename;
 }
 
-static void recv_data_buffered(struct netreader* rd, struct ostream* outstream, uint64_t data_length) {
+static void recv_data_buffered(struct netreader* rd, struct ostream* outstream, uint64_t data_length, enum HTTPSTATUS code, requests_user_cb_t user_cb, void* user_data) {
 	char buf[REQUESTS_RECV_BUFSIZE] = { 0 };
-	uint64_t bytes_received = 0;
-	while(data_length > 0 && (bytes_received = net_rd_recv(rd, buf, MIN(data_length, REQUESTS_RECV_BUFSIZE))) > 0) {
-		outstream->write(outstream, buf, bytes_received);
-		data_length -= bytes_received;
+	struct download_state s = { .buffer.data = buf, .content_length = data_length, .bytes_left = data_length, .status_code = code };
+
+	while(s.bytes_left > 0 && (s.buffer.size = net_rd_recv(rd, s.buffer.data, MIN(s.bytes_left, REQUESTS_RECV_BUFSIZE))) > 0) {
+		s.bytes_left -= s.buffer.size;
+		if(user_cb != NULL) {
+			user_cb(&s, user_data);
+		}
+		outstream->write(outstream, s.buffer.data, s.buffer.size);
 	}
 }
 
@@ -1238,10 +1263,10 @@ struct url resolve_url(char* url_str) {
  |				     |
   ---------------------------------- */
 
-static int determine_transfer_mode(struct header* headers, int64_t* content_length) {
+static int determine_transfer_mode(struct header* headers, uint64_t* content_length) {
 	char *cl_string, *te_string;
 	if((cl_string = header_get_value(headers, "Content-Length"))) {
-		*content_length = strtol(cl_string, NULL, 10);
+		*content_length = strtoull(cl_string, NULL, 10);
 		return __TRANSFER_MODE_SIZED;
 	} else if((te_string = header_get_value(headers, "Transfer-Encoding")) && cistrcmp(te_string, "chunked") == 0) {
 		return __TRANSFER_MODE_CHUNKED;
@@ -1368,7 +1393,7 @@ static uint64_t get_chunk_length(struct netreader* rd) {
 		if(match_counter == STATIC_STRSIZE(sequence)) {
 			buf = reallocate(buf, buf_idx, buf_idx + 1);
 			buf[buf_idx] = '\0';
-			len = strtol(buf, NULL, 16);
+			len = strtoull(buf, NULL, 16);
 			break;
 		}
 	}
@@ -1377,40 +1402,42 @@ static uint64_t get_chunk_length(struct netreader* rd) {
 	return len;
 }
 
-static struct response* retrieve_response(struct netreader* rd, struct ostream* outstream) {
+static struct response* retrieve_response(struct netreader* rd, struct ostream* outstream, requests_user_cb_t user_cb, void* user_data) {
 	char* raw_headers = retrieve_raw_headers(rd);
-	if(raw_headers == NULL) {
+	assert(raw_headers);
+	if(*raw_headers == '\0') {
+		free(raw_headers);
 		return NULL;
 	}
-	int64_t content_length =  -1;
+	uint64_t content_length = 0;
 	struct response* resp = alloc_response();
 	parse_headers(resp, raw_headers);
 	free(raw_headers);
 	if(!outstream) {
 		return resp;
 	}
+
 	uint8_t transfer_mode = determine_transfer_mode(&resp->header, &content_length);
-	if(transfer_mode == __TRANSFER_MODE_NODATA) {
-		outstream->close(outstream);
-		return resp;
-	}
 
 	switch(transfer_mode) {
 	case __TRANSFER_MODE_SIZED: {
-		recv_data_buffered(rd, outstream, content_length);
+		recv_data_buffered(rd, outstream, content_length, resp->status_code, user_cb, user_data);
 		break;
 	}
 	case __TRANSFER_MODE_CHUNKED: {
 		char endbuf[3] = {0};
 		do {
 			content_length = get_chunk_length(rd);
-			recv_data_buffered(rd, outstream, content_length);
+			recv_data_buffered(rd, outstream, content_length, resp->status_code, user_cb, user_data);
 			net_rd_recv(rd, endbuf, 2);
 		} while(content_length > 0);
 		break;
 	}
+	case __TRANSFER_MODE_NODATA:
+	default:
+		break;
 	}
-	outstream->close(outstream);
+
 	return resp;
 }
 
@@ -1442,28 +1469,22 @@ static struct response* perform_request(char* url_str, enum REQUEST_METHOD metho
 	
 	if((conn_io.socket = connect_to_host(&host_url)) < 0) {
 		error(FUNC_LINE_FMT "Failed to create socket\n", __func__, __LINE__);
-		if(outstream) {
-			outstream->close(outstream);
-		}
 		goto freeurl;
 	}
 	if(!OPTION(options, disable_ssl) && host_url.protocol == HTTPS) {
 		char* certfile = OPTION(options, cert) ? options->cert : NULL;
 		if(!connect_secure(&conn_io, host_url.hostname, certfile, OPTION(options, ignore_verification))) {
-			if(outstream) {
-				outstream->close(outstream);
-			}
 			goto freeurl;
 		}
 	}
 
 	do_request(&conn_io, &host_url, method, options);
 
+	requests_user_cb_t user_callback = OPTION(options, data_callback) ? options->data_callback : NULL;
+	void* callback_data = OPTION(options, user_data) ? options->user_data : NULL;
+
 	struct netreader conn_reader = net_rd_new(&conn_io);
-	resp = retrieve_response(&conn_reader, outstream);
-	if(!resp) {
-		error(FUNC_LINE_FMT "no response from '%s'", __func__, __LINE__, host_url.hostname);
-	} else {
+	if((resp = retrieve_response(&conn_reader, outstream, user_callback, callback_data))) {
 		resp->url = malloc(sizeof(*resp->url));
 		memset(resp->url, 0, sizeof(*resp->url));
 		*resp->url = clone_url(&host_url);
@@ -1478,93 +1499,84 @@ freeurl:
 	return resp;
 }
 
-struct response* requests_get(char* url, struct request_options* options) {
+struct response* requests_perform(char* url, enum REQUEST_METHOD method, struct request_options* options) {
 	struct __sized_buf b = { 0 };
 	struct ostream buffer_stream = os_create_buf(&b);
 	struct response* r = NULL;
-	if((r = perform_request(url, GET, &buffer_stream, options))) {
+	if((r = perform_request(url, method, &buffer_stream, options))) {
 		r->body = b;
 	}
+	buffer_stream.close(&buffer_stream);
 	return r;
+}
+
+struct response* requests_perform_file(char* url, char* filename, enum REQUEST_METHOD method, struct request_options* options) {
+	struct ostream file_stream = os_create_file(filename);
+	if(!file_stream.object) {
+		return NULL;
+	}
+	struct response* r = perform_request(url, method, &file_stream, options);
+	file_stream.close(&file_stream);
+	return r;
+}
+
+struct response* requests_perform_fileptr(char* url, FILE* file, enum REQUEST_METHOD method, struct request_options* options) {
+	if(!file) {
+		error(FUNC_LINE_FMT "invalid file pointer\n", __func__, __LINE__);
+		return NULL;
+	}
+	struct ostream file_stream = os_create_fileptr(file);
+	struct response* r = perform_request(url, method, &file_stream, options);
+	file_stream.close(&file_stream);
+	return r;
+}
+
+struct response* requests_perform_no_body(char* url, enum REQUEST_METHOD method, struct request_options* options) {
+	return perform_request(url, method, NULL, options);
+}
+
+struct response* requests_get(char* url, struct request_options* options) {
+	return requests_perform(url, GET, options);
 }
 
 struct response* requests_get_file(char* url, char* filename, struct request_options* options) {
-	struct ostream file_stream = os_create_file(filename);
-	if(!file_stream.object) {
-		return NULL;
-	}
-	return perform_request(url, GET, &file_stream, options);
+	return requests_perform_file(url, filename, GET, options);
 }
 
 struct response* requests_get_fileptr(char* url, FILE* file, struct request_options* options) {
-	if(!file) {
-		error(FUNC_LINE_FMT "invalid file pointer\n", __func__, __LINE__);
-		return NULL;
-	}
-	struct ostream file_stream = os_create_fileptr(file);
-	return perform_request(url, GET, &file_stream, options);
+	return requests_perform_fileptr(url, file, GET, options);
 }
 
 struct response* requests_head(char* url, struct request_options* options) {
-	return perform_request(url, HEAD, NULL, options);
+	return requests_perform_no_body(url, HEAD, options);
 }
 
 struct response* requests_post(char* url, struct request_options* options) {
-	struct __sized_buf b = { 0 };
-	struct ostream buffer_stream = os_create_buf(&b);
-	struct response* r = NULL;
-	if((r = perform_request(url, POST, &buffer_stream, options))) {
-		r->body = b;
-	}
-	return r;
+	return requests_perform(url, POST, options);
 }
 
 struct response* requests_post_file(char* url, char* filename, struct request_options* options) {
-	struct ostream file_stream = os_create_file(filename);
-	if(!file_stream.object) {
-		return NULL;
-	}
-	return perform_request(url, POST, &file_stream, options);
+	return requests_perform_file(url, filename, POST, options);
 }
 
 struct response* requests_post_fileptr(char* url, FILE* file, struct request_options* options) {
-	if(!file) {
-		error(FUNC_LINE_FMT "invalid file pointer\n", __func__, __LINE__);
-		return NULL;
-	}
-	struct ostream file_stream = os_create_fileptr(file);
-	return perform_request(url, POST, &file_stream, options);
+	return requests_perform_fileptr(url, file, POST, options);
 }
 
 struct response* requests_put(char* url, struct request_options* options) {
-	struct __sized_buf b = { 0 };
-	struct ostream buffer_stream = os_create_buf(&b);
-	struct response* r = NULL;
-	if((r = perform_request(url, PUT, &buffer_stream, options))) {
-		r->body = b;
-	}
-	return r;
+	return requests_perform(url, PUT, options);
 }
 
 struct response* requests_put_file(char* url, char* filename, struct request_options* options) {
-	struct ostream file_stream = os_create_file(filename);
-	if(!file_stream.object) {
-		return NULL;
-	}
-	return perform_request(url, PUT, &file_stream, options);
+	return requests_perform_file(url, filename, PUT, options);
 }
 
 struct response* requests_put_fileptr(char* url, FILE* file, struct request_options* options) {
-	if(!file) {
-		error(FUNC_LINE_FMT "invalid file pointer\n", __func__, __LINE__);
-		return NULL;
-	}
-	struct ostream file_stream = os_create_fileptr(file);
-	return perform_request(url, PUT, &file_stream, options);
+	return requests_perform_fileptr(url, file, PUT, options);
 }
 
 struct response* requests_options(char* url, struct request_options* options) {
-	return perform_request(url, OPTIONS, NULL, options);
+	return requests_perform_no_body(url, OPTIONS, options);
 }
 
 #undef REQUESTS_IMPLEMENTATION
