@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
 
 #ifdef _WIN32
 	WSADATA wsa;
-       	WSAStartup(MAKEWORD(2, 2), &wsa);
+	WSAStartup(MAKEWORD(2, 2), &wsa);
 #endif
 
 	struct request_options o = { .body = { .data = message, .size = sizeof(message) - 1 } };

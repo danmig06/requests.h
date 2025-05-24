@@ -72,10 +72,11 @@ int main(int argc, char** argv) {
 	free_response(r);
 	free_url(&u);
 
-	requests_unload_ssl();
+	requests_free_ssl_context();
 
 #ifdef _WIN32
 	WSACleanup();
 #endif
+	
 	return 0;
 }

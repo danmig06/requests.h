@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
 
 #ifdef _WIN32
 	WSADATA wsa;
-       	WSAStartup(MAKEWORD(2, 2), &wsa);
+	WSAStartup(MAKEWORD(2, 2), &wsa);
 #endif
 
 	struct response* r = requests_get(argv[1], NULL);

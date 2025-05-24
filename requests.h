@@ -24,7 +24,7 @@
  */
 
 /*	TODO:
- *		- User download callback
+ *		- add mbedTLS support
  *		- maybe Input Stream system
  */
 
@@ -45,8 +45,6 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <dlfcn.h>
-#define LIBCRYPTO_NAME "libcrypto.so"
-#define LIBSSL_NAME "libssl.so"
 #define closesocket(s) close(s)
 
 #elif defined(WIN32_LEAN_AND_MEAN) || defined(_WIN32) || defined(WIN32)
@@ -55,34 +53,21 @@
 #include <winsock2.h>
 #include <windows.h>
 
-#define RTLD_LAZY 0
-#define RTLD_GLOBAL 0
-#define dlopen(name, flags) LoadLibraryA(name)
-#define dlsym(lib, name) (void*)GetProcAddress(lib, name)
-#define dlclose(lib) FreeLibrary(lib)
-#define LIBCRYPTO_NAME "libcrypto.dll"
-#define LIBSSL_NAME "libssl.dll"
-
-static char windows_errbuf[256] = {0};
-char* dlerror() {
-	DWORD err = GetLastError();
-	if(!err) {
-		return NULL;	
-	}
-
-	snprintf(windows_errbuf, sizeof(windows_errbuf), "WinAPI error %d", err);
-
-	return windows_errbuf;
-}
-
 #else
 #error "unsupported platform"
 #endif
+
+#ifndef REQUESTS_NO_TLS
 
 #include <openssl/ssl.h>
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 #include <openssl/x509_vfy.h>
+typedef SSL_CTX TLS_CTX;
+typedef SSL TLS_CONN;
+typedef X509 TLS_CERT;
+
+#endif // #ifndef REQUESTS_NO_TLS
 
 #define LOGGER_SRCNAME "[requests.h]" 
 #define FUNC_LINE_FMT "%s():%d: "
@@ -250,14 +235,15 @@ typedef void (*requests_user_cb_t)(struct download_state*, void*);
 
 struct request_options {
 	struct __sized_buf body;
-	bool disable_ssl;
-	bool ignore_verification;
 	enum HTTPVER http_version;
 	struct header header;
 	struct url* url;
 	requests_user_cb_t data_callback;
 	void* user_data;
+	bool disable_ssl;
+	bool ignore_verification;
 	char* cert;
+
 };
 
 struct response {
@@ -307,9 +293,10 @@ struct response* requests_options(char* url, struct request_options* options);
 
 void requests_set_log_level(enum LOGLEVEL mask);
 
-SSL_CTX* requests_get_ssl_context(void);
-void requests_unload_ssl(void);
+#ifndef REQUESTS_NO_TLS
+TLS_CTX* requests_get_ssl_context(void);
 void requests_free_ssl_context(void);
+#endif
 
 struct response* alloc_response(void);
 void free_response(struct response* freeptr);
@@ -420,16 +407,20 @@ struct netio;
 typedef ssize_t (*netiofunc_t)(struct netio*, void*, size_t);
 
 struct netio {
-	SSL* ssl;
+#ifndef REQUESTS_NO_TLS
+	TLS_CONN* ssl;
+#endif
 	int socket;
 	netiofunc_t send;
 	netiofunc_t recv;
 };
 
 static ssize_t __not_secure_send(struct netio* conn_io, void* buf, size_t num); 
-static ssize_t __secure_send(struct netio* conn_io, void* buf, size_t num); 
 static ssize_t __not_secure_recv(struct netio* conn_io, void* buf, size_t num); 
+#ifndef REQUESTS_NO_TLS
+static ssize_t __secure_send(struct netio* conn_io, void* buf, size_t num); 
 static ssize_t __secure_recv(struct netio* conn_io, void* buf, size_t num); 
+#endif
 
 static ssize_t __not_secure_send(struct netio* conn_io, void* buf, size_t num) {
 	return send(conn_io->socket, buf, num, 0);
@@ -484,15 +475,13 @@ static inline bool net_rd_eof(struct netreader* rd) {
 }
 
 static size_t net_rd_recv(struct netreader* rd, void* mem, size_t n) {
-	uint8_t byte = 0;
 	uint8_t* buf = mem;
 	size_t i;
 	for(i = 0; i < n; i++) {
-		byte = net_rd_nextbyte(rd);
 		if(net_rd_eof(rd)) {
 			break;
 		}
-		buf[i] = byte;
+		buf[i] = net_rd_nextbyte(rd);
 	}
 	return i;
 }
@@ -565,139 +554,120 @@ static void __os_close_buf(struct ostream* os) {
 
 /* ----------------------------------
  |				     |
- |	  SSL/crypto loader          |
+ |	  TLS library API            |
  |				     |
   ---------------------------------- */
+#ifndef REQUESTS_NO_TLS
+static TLS_CTX* g_tlslib_ctx = NULL;
 
-static struct {
-	void* libcrypto;
-	void* self;
-	int (*init)(uint64_t, OPENSSL_INIT_SETTINGS*);
-	SSL* (*new)(SSL_CTX*);
-	SSL_CTX* (*ctx_new)(SSL_METHOD*);
-	void (*ctx_set_options)(SSL_CTX*, uint64_t);
-	SSL_METHOD* (*client_method)(void);
-	void (*set_fd)(SSL*, int);
-	int (*connect)(SSL*);
-	int (*write)(SSL*, void*, size_t, size_t*);
-	int (*read)(SSL*, void*, size_t, size_t*);
-	long (*ctrl)(SSL*, int, long, void*);
-	void (*set_verify)(SSL*, int, SSL_verify_cb);
-	X509* (*get_peer_certificate)(SSL*);
-	int (*ctx_set_default_verify_paths)(SSL_CTX *ctx);
-	long (*get_verify_result)(SSL*);
-	int (*use_certificate_file)(SSL*, char*, int);
-	void (*free_ssl)(SSL*);
-	void (*free_ssl_ctx)(SSL_CTX*);
-	void (*free_x509)(X509*);
-} libssl = { NULL };
-static SSL_CTX* g_ssl_ctx = NULL;
+static TLS_CTX* init_ssl_context(void) {
+	g_tlslib_ctx = SSL_CTX_new(TLS_client_method());
+	if(!g_tlslib_ctx) {
+		error(FUNC_LINE_FMT "TLS context initialization failed\n", __func__, __LINE__);
+		return NULL;
+	}
+	SSL_CTX_set_default_verify_paths(g_tlslib_ctx);
+	return g_tlslib_ctx;
+}
+
+TLS_CTX* requests_get_ssl_context(void) {
+	return g_tlslib_ctx;
+}
+
+static TLS_CONN* tls_conn_new(void) {
+	SSL* ssl = SSL_new(g_tlslib_ctx);
+	if(ssl) {
+		SSL_set_verify(ssl, SSL_VERIFY_PEER, NULL);
+	}
+	return ssl;
+}
+
+static void tls_conn_free(TLS_CONN* tls) {
+	SSL_free(tls);
+}
+
+static void tls_set_fd(TLS_CONN* tls, struct netio* io) {
+	SSL_set_fd(tls, io->socket);
+}
+
+static int tls_connect(TLS_CONN* tls) {
+	return SSL_connect(tls);
+}
+
+static void tls_set_sni(TLS_CONN* tls, char* hostname) {
+	SSL_set_tlsext_host_name(tls, hostname);
+}
+
+static void tls_use_certificate_file(TLS_CONN* tls, char* certfile) {
+	SSL_use_certificate_file(tls, certfile, SSL_FILETYPE_PEM);
+}
+
+static TLS_CERT* tls_get_peer_certificate(TLS_CONN* tls) {
+	return SSL_get_peer_certificate(tls);
+}
+
+static void tls_cert_free(TLS_CERT* cert) {
+	X509_free(cert);
+}
+
+static bool tls_get_verify_result(TLS_CONN* tls) {
+	long result = SSL_get_verify_result(tls);
+	if(result != X509_V_OK) {
+		error(FUNC_LINE_FMT "certificate verification failed: code %ld\n", __func__, __LINE__, result);
+		return false;
+	}
+	return true;
+}
+
+static size_t tls_write(TLS_CONN* tls, void* buf, size_t num) {
+	size_t wrotebytes = 0;
+	SSL_write_ex(tls, buf, num, &wrotebytes);
+	return wrotebytes;
+}
+
+static size_t tls_read(TLS_CONN* tls, void* buf, size_t num) {
+	size_t readbytes = 0;
+	SSL_read_ex(tls, buf, num, &readbytes);
+	return readbytes;
+}
+
+void requests_free_ssl_context(void) {
+	if(g_tlslib_ctx) {
+		SSL_CTX_free(g_tlslib_ctx);
+		g_tlslib_ctx = NULL;
+	}
+}
 
 static ssize_t __secure_send(struct netio* conn_io, void* buf, size_t num) {
-	size_t wrotebytes = 0;
-	libssl.write(conn_io->ssl, buf, num, &wrotebytes);
-	return (ssize_t)wrotebytes;
+	return (ssize_t)tls_write(conn_io->ssl, buf, num);
 }
 
 static ssize_t __secure_recv(struct netio* conn_io, void* buf, size_t num) {
-	size_t readbytes = 0;
-	libssl.read(conn_io->ssl, buf, num, &readbytes);
-	return (ssize_t)readbytes;
+	return (ssize_t)tls_read(conn_io->ssl, buf, num);
 }
 
-#ifndef REQUESTS_USE_SSL_STATIC
-
-static void* __load_func(char* name, char** errptr) {
-	void* fn = dlsym(libssl.self, name);
-	if(!fn) {
-		*errptr = dlerror();
-		if((fn = dlsym(libssl.libcrypto, name))) {
-			*errptr = NULL;
-		} else {
-			dlerror();
-		}
+void netio_close(struct netio* freeptr) {
+	closesocket(freeptr->socket);
+	if(freeptr->ssl) {
+		tls_conn_free(freeptr->ssl);
 	}
-	return fn;
 }
-
-#define LOAD_FUNC(dst, func) \
-	do { \
-		char* err = NULL; \
-		dst = __load_func(#func, &err); \
-		if(err) { \
-			error("Failed to load function " #func " from libssl: %s\n", err); \
-			errcnt++; \
-		} \
-	} while(0);
 
 #else
 
-#define LOAD_FUNC(dst, func) \
-	dst = (void*)func
-
-#endif
-
-static void* load_ssl_functions(void) {
-	uint8_t errcnt = 0;
-	if((libssl.libcrypto = dlopen(LIBCRYPTO_NAME, RTLD_LAZY | RTLD_GLOBAL)) == NULL) {
-		error(FUNC_LINE_FMT "Failed to load libcrypto, libssl loading aborted: %s\n", __func__, __LINE__, dlerror());
-		return NULL;
-	}
-	if((libssl.self = dlopen(LIBSSL_NAME, RTLD_LAZY)) == NULL) {
-		error(FUNC_LINE_FMT "Failed to load libssl: %s\n", __func__, __LINE__, dlerror());
-		dlclose(libssl.libcrypto);
-		libssl.libcrypto = NULL;
-		return NULL;
-	}
-
-	LOAD_FUNC(libssl.init, OPENSSL_init_ssl);
-	LOAD_FUNC(libssl.new, SSL_new);
-	LOAD_FUNC(libssl.ctx_new, SSL_CTX_new);
-	LOAD_FUNC(libssl.ctx_set_options, SSL_CTX_set_options);
-	LOAD_FUNC(libssl.client_method, TLS_client_method);
-	LOAD_FUNC(libssl.set_fd, SSL_set_fd);
-	LOAD_FUNC(libssl.connect, SSL_connect);
-	LOAD_FUNC(libssl.write, SSL_write_ex);
-	LOAD_FUNC(libssl.read, SSL_read_ex);
-	LOAD_FUNC(libssl.ctrl, SSL_ctrl);
-	LOAD_FUNC(libssl.set_verify, SSL_set_verify);
-	LOAD_FUNC(libssl.get_peer_certificate, SSL_get1_peer_certificate);
-	LOAD_FUNC(libssl.ctx_set_default_verify_paths, SSL_CTX_set_default_verify_paths);
-	LOAD_FUNC(libssl.get_verify_result, SSL_get_verify_result);
-	LOAD_FUNC(libssl.use_certificate_file, SSL_use_certificate_file);
-	LOAD_FUNC(libssl.free_ssl, SSL_free);
-	LOAD_FUNC(libssl.free_ssl_ctx, SSL_CTX_free);
-	LOAD_FUNC(libssl.free_x509, X509_free);
-
-	if(errcnt > 0) {
-		error(FUNC_LINE_FMT "Failed to load %d functions from libssl\n", __func__, __LINE__, errcnt);
-		dlclose(libssl.libcrypto);
-		dlclose(libssl.self);
-		memset(&libssl, 0, sizeof(libssl));
-	} else {
-		info(FUNC_LINE_FMT "All libssl functions loaded successfully\n", __func__, __LINE__);
-	}
-	return libssl.self;
-}
-#undef LOAD_FUNC
-
-static SSL_CTX* init_ssl_context(void) {
-	if(g_ssl_ctx) {
-		warn(FUNC_LINE_FMT "SSL context is already initialized\n", __func__, __LINE__);
-		return g_ssl_ctx;
-	}
-	g_ssl_ctx = libssl.ctx_new(libssl.client_method());
-	libssl.ctx_set_default_verify_paths(g_ssl_ctx);
-	if(!g_ssl_ctx) {
-		error(FUNC_LINE_FMT "SSL context initialization failed\n", __func__, __LINE__);
-		return NULL;
-	}
-	return g_ssl_ctx;
+void netio_close(struct netio* freeptr) {
+	closesocket(freeptr->socket);
 }
 
-SSL_CTX* requests_get_ssl_context(void) {
-	return g_ssl_ctx;
+void* requests_get_ssl_context(void) {
+	return NULL;
 }
+
+void requests_free_ssl_context(void) {
+	return;
+}
+
+#endif // #ifndef REQUESTS_NO_TLS
 
 /* ----------------------------------
  |				     |
@@ -925,33 +895,10 @@ void free_response(struct response* freeptr) {
 	free(freeptr);
 }
 
-void netio_close(struct netio* freeptr) {
-	closesocket(freeptr->socket);
-	if(freeptr->ssl) {
-		libssl.free_ssl(freeptr->ssl);
-	}
-}
-
 static void net_rd_close(struct netreader* rd) {
 	netio_close(rd->io);
 	free(rd->buf);
 	memset(rd, 0, sizeof(*rd));
-}
-
-void requests_free_ssl_context(void) {
-	if(g_ssl_ctx) {
-		libssl.free_ssl_ctx(g_ssl_ctx);
-		g_ssl_ctx = NULL;
-	}
-}
-
-void requests_unload_ssl(void) {
-	if(libssl.self) {
-		requests_free_ssl_context();
-		dlclose(libssl.libcrypto);
-		dlclose(libssl.self);
-		memset(&libssl, 0, sizeof(libssl));
-	}
 }
 
 /* ----------------------------------
@@ -1000,42 +947,33 @@ static int connect_to_host(struct url* url) {
 	return socket_fd;
 }
 
+#ifndef REQUESTS_NO_TLS
 static bool connect_secure(struct netio* io, char* vfy_hostname, char* certfile, bool ignore_vfy) {
 	if(io->socket < 0) return false;
-	if(!libssl.self) {
-		if(!load_ssl_functions()) {
-			return false;
-		}
-		if(!init_ssl_context()) {
-			error(FUNC_LINE_FMT "failed to initialize SSL context\n", __func__, __LINE__);
-			return false;
-		}
+	if(!init_ssl_context()) {
+		error(FUNC_LINE_FMT "failed to initialize SSL context\n", __func__, __LINE__);
+		return false;
 	}
-	if(!(io->ssl = libssl.new(g_ssl_ctx))) {
+
+	if(!(io->ssl = tls_conn_new())) {
 		error(FUNC_LINE_FMT "failed to create SSL object\n", __func__, __LINE__);
 		return false;
 	}
 	if(certfile) {
 		debug(FUNC_LINE_FMT "Using custom certificate from '%s'\n", __func__, __LINE__, certfile);
-		libssl.use_certificate_file(io->ssl, certfile, SSL_FILETYPE_PEM);
+		tls_use_certificate_file(io->ssl, certfile);
 	}
-	// SSL_set_tlsext_host_name(io->ssl, vfy_hostname) -- very important, this sets up the Server Name Indication for cert verification
-	libssl.ctrl(io->ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, vfy_hostname);
-	libssl.set_fd(io->ssl, io->socket);
-	if(libssl.connect(io->ssl)) {
-		libssl.set_verify(io->ssl, SSL_VERIFY_PEER, NULL);
-		X509* server_cert = libssl.get_peer_certificate(io->ssl);
+	tls_set_sni(io->ssl, vfy_hostname);
+	tls_set_fd(io->ssl, io);
+	if(tls_connect(io->ssl)) {
+		TLS_CERT* server_cert = tls_get_peer_certificate(io->ssl);
 		if(!server_cert) { 
 			error(FUNC_LINE_FMT "No certificate was provided by the server\n", __func__, __LINE__);
 			goto cleanup;
 		}
-		libssl.free_x509(server_cert);
-		long result = 0;
-		if((result = libssl.get_verify_result(io->ssl)) != X509_V_OK) {
-			error(FUNC_LINE_FMT "certificate verification failed, code %ld\n", __func__, __LINE__, result);
-			if(!ignore_vfy) {
-				goto cleanup;
-			}
+		tls_cert_free(server_cert);
+		if(!ignore_vfy && !tls_get_verify_result(io->ssl)) {
+			goto cleanup;
 		}
 		io->send = __secure_send;
 		io->recv = __secure_recv;
@@ -1043,10 +981,11 @@ static bool connect_secure(struct netio* io, char* vfy_hostname, char* certfile,
 	}
 
 cleanup:
-	libssl.free_ssl(io->ssl);
+	tls_conn_free(io->ssl);
 	io->ssl = NULL;
 	return false;
 }
+#endif // #ifndef REQUESTS_NO_TLS
 
 /* ----------------------------------
  |				     |
@@ -1463,7 +1402,7 @@ static void do_request(struct netio* io, struct url* host_url, enum REQUEST_METH
 
 static struct response* perform_request(char* url_str, enum REQUEST_METHOD method, struct ostream* outstream, struct request_options* options) {
 	struct url host_url = { 0 };
-	struct netio conn_io = { .ssl = NULL, .send = __not_secure_send, .recv = __not_secure_recv };
+	struct netio conn_io = { .send = __not_secure_send, .recv = __not_secure_recv };
 	host_url = OPTION(options, url) ? *options->url : resolve_url(url_str);	
 	struct response* resp = NULL;
 	
@@ -1471,12 +1410,14 @@ static struct response* perform_request(char* url_str, enum REQUEST_METHOD metho
 		error(FUNC_LINE_FMT "Failed to create socket\n", __func__, __LINE__);
 		goto freeurl;
 	}
+#ifndef REQUESTS_NO_TLS
 	if(!OPTION(options, disable_ssl) && host_url.protocol == HTTPS) {
 		char* certfile = OPTION(options, cert) ? options->cert : NULL;
 		if(!connect_secure(&conn_io, host_url.hostname, certfile, OPTION(options, ignore_verification))) {
 			goto freeurl;
 		}
 	}
+#endif // #ifndef REQUESTS_NO_TLS
 
 	do_request(&conn_io, &host_url, method, options);
 
