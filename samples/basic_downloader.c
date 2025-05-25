@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
 #endif
 
 	// requests_set_log_level(ALL);
-	struct request_options o = { .data_callback = data_callback };
+	struct request_options o = { .ignore_verification = true, .data_callback = data_callback };
 	struct url u = resolve_url(argv[1]);
 	o.url = &u;
 	char* filename = url_get_filename(o.url);
@@ -47,7 +47,9 @@ int main(int argc, char** argv) {
 	if(!filename) {
 		filename = "page.html";
 	}
+	filename = strdup(filename);
 
+	printf("downloading into \"%s\"...\n", filename);
 	struct response* r = requests_get_file(NULL, filename, &o);
 	
 	if(!r) {
@@ -55,7 +57,6 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	printf("downloading into \"%s\"...\n", filename);
 	while(r->status_code > 300 && r->status_code < 307) {
 		char* new_location = header_get_value(&r->header, "location");
 		assert(new_location);
@@ -69,14 +70,14 @@ int main(int argc, char** argv) {
 		}
 	}
 	printf("\n");
+	free(filename);
 	free_response(r);
 	free_url(&u);
 
-	requests_free_ssl_context();
+	requests_free_tls_context();
 
 #ifdef _WIN32
 	WSACleanup();
 #endif
-	
 	return 0;
 }
