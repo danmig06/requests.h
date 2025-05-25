@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
 #endif
 
 	// requests_set_log_level(ALL);
-	struct request_options o = { .ignore_verification = true, .data_callback = data_callback };
+	struct request_options o = { .data_callback = data_callback };
 	struct url u = resolve_url(argv[1]);
 	o.url = &u;
 	char* filename = url_get_filename(o.url);
