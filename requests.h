@@ -1452,10 +1452,11 @@ struct response* requests_perform(char* url, enum REQUEST_METHOD method, struct 
 	struct __sized_buf b = { 0 };
 	struct ostream buffer_stream = os_create_buf(&b);
 	struct response* r = NULL;
-	if((r = perform_request(url, method, &buffer_stream, options))) {
+	r = perform_request(url, method, &buffer_stream, options);
+	buffer_stream.close(&buffer_stream);
+       	if(r) {
 		r->body = b;
 	}
-	buffer_stream.close(&buffer_stream);
 	return r;
 }
 
