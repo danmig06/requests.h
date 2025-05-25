@@ -1,0 +1,1729 @@
+desc: (none)
+cmd: ./get https://archive.org/download/umineko-ultimate-edition/uminekocover03.png cover.png
+time_unit: i
+#-----------
+snapshot=0
+#-----------
+time=0
+mem_heap_B=0
+mem_heap_extra_B=0
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=1
+#-----------
+time=5195854
+mem_heap_B=93433
+mem_heap_extra_B=1623
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=2
+#-----------
+time=9442753
+mem_heap_B=133143
+mem_heap_extra_B=3145
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=3
+#-----------
+time=15389948
+mem_heap_B=381460
+mem_heap_extra_B=4564
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=4
+#-----------
+time=18822105
+mem_heap_B=400858
+mem_heap_extra_B=5502
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=5
+#-----------
+time=25024898
+mem_heap_B=442144
+mem_heap_extra_B=7312
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=6
+#-----------
+time=28978252
+mem_heap_B=458498
+mem_heap_extra_B=7678
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=7
+#-----------
+time=35179924
+mem_heap_B=508740
+mem_heap_extra_B=9868
+mem_stacks_B=0
+heap_tree=detailed
+n6: 508740 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 213777 0x4995A67: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 213777 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 213777 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 213777 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 213777 0x10ABAC: tls_init_context (requests.h:581)
+      n1: 213777 0x10BD24: connect_secure (requests.h:961)
+       n1: 213777 0x10D519: perform_request (requests.h:1424)
+        n1: 213777 0x10D780: requests_perform_file (requests.h:1467)
+         n1: 213777 0x10D8B4: requests_get_file (requests.h:1492)
+          n0: 213777 0x10DC98: main (main.c:51)
+ n2: 154730 0x48EF57B: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 153495 0x4982867: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 153495 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 153495 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 153495 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 153495 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 153495 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 153495 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 153495 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 153495 0x10BD24: connect_secure (requests.h:961)
+           n1: 153495 0x10D519: perform_request (requests.h:1424)
+            n1: 153495 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 153495 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 153495 0x10DC98: main (main.c:51)
+  n0: 1235 in 1 place, below massif's threshold (1.00%)
+ n0: 45605 in 47 places, all below massif's threshold (1.00%)
+ n1: 43180 0x48F983D: ParseCert (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 43180 0x49826A5: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 43180 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 43180 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 43180 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 43180 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 43180 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 43180 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 43180 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 43180 0x10BD24: connect_secure (requests.h:961)
+           n1: 43180 0x10D519: perform_request (requests.h:1424)
+            n1: 43180 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 43180 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 43180 0x10DC98: main (main.c:51)
+ n1: 32816 0x4C5FDA4: __alloc_dir (opendir.c:115)
+  n1: 32816 0x4C5FE11: opendir_tail (opendir.c:63)
+   n1: 32816 0x48DAE1F: wc_ReadDirFirst (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 32816 0x49961E9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 32816 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 32816 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 32816 0x10ABAC: tls_init_context (requests.h:581)
+        n1: 32816 0x10BD24: connect_secure (requests.h:961)
+         n1: 32816 0x10D519: perform_request (requests.h:1424)
+          n1: 32816 0x10D780: requests_perform_file (requests.h:1467)
+           n1: 32816 0x10D8B4: requests_get_file (requests.h:1492)
+            n0: 32816 0x10DC98: main (main.c:51)
+ n1: 18632 0x48EE7CD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 18632 0x4982848: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 18632 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 18632 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 18632 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 18632 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 18632 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 18632 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 18632 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 18632 0x10BD24: connect_secure (requests.h:961)
+           n1: 18632 0x10D519: perform_request (requests.h:1424)
+            n1: 18632 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 18632 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 18632 0x10DC98: main (main.c:51)
+#-----------
+snapshot=8
+#-----------
+time=42125215
+mem_heap_B=288987
+mem_heap_extra_B=9477
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=9
+#-----------
+time=47355635
+mem_heap_B=289406
+mem_heap_extra_B=9490
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=10
+#-----------
+time=50970711
+mem_heap_B=288943
+mem_heap_extra_B=9489
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=11
+#-----------
+time=56762303
+mem_heap_B=290133
+mem_heap_extra_B=9483
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=12
+#-----------
+time=62685559
+mem_heap_B=288511
+mem_heap_extra_B=9465
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=13
+#-----------
+time=65656753
+mem_heap_B=290113
+mem_heap_extra_B=9487
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=14
+#-----------
+time=70101626
+mem_heap_B=289341
+mem_heap_extra_B=9475
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=15
+#-----------
+time=73195053
+mem_heap_B=294279
+mem_heap_extra_B=9849
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=16
+#-----------
+time=78449018
+mem_heap_B=1152995
+mem_heap_extra_B=11989
+mem_stacks_B=0
+heap_tree=detailed
+n7: 1152995 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n2: 826512 0x491503A: wc_ecc_new_point (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 823296 0x4915335: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 823296 0x491AB96: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 823296 0x491B0BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 823296 0x491B290: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 823296 0x494A9C4: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 823296 0x49C9E93: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 823296 0x49D00DE: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 823296 0x49D1422: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 823296 0x49DADFA: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 823296 0x495D817: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 823296 0x4985A07: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+             n1: 823296 0x10AC5B: tls_connect (requests.h:606)
+              n1: 823296 0x10BE44: connect_secure (requests.h:976)
+               n1: 823296 0x10D519: perform_request (requests.h:1424)
+                n1: 823296 0x10D780: requests_perform_file (requests.h:1467)
+                 n1: 823296 0x10D8B4: requests_get_file (requests.h:1492)
+                  n0: 823296 0x10DC98: main (main.c:51)
+  n0: 3216 in 1 place, below massif's threshold (1.00%)
+ n2: 155010 0x48EF57B: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 155010 0x4982867: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 155010 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 155010 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 155010 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 155010 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 155010 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 155010 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 155010 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 155010 0x10BD24: connect_secure (requests.h:961)
+           n1: 155010 0x10D519: perform_request (requests.h:1424)
+            n1: 155010 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 155010 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 155010 0x10DC98: main (main.c:51)
+  n0: 0 in 1 place, below massif's threshold (1.00%)
+ n0: 55527 in 65 places, all below massif's threshold (1.00%)
+ n1: 43450 0x48F983D: ParseCert (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 43450 0x49826A5: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 43450 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 43450 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 43450 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 43450 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 43450 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 43450 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 43450 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 43450 0x10BD24: connect_secure (requests.h:961)
+           n1: 43450 0x10D519: perform_request (requests.h:1424)
+            n1: 43450 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 43450 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 43450 0x10DC98: main (main.c:51)
+ n1: 37512 0x49B2692: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 37512 0x494C495: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 37512 0x497EE6C: wolfSSL_new (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 37512 0x10ABD9: tls_conn_new (requests.h:590)
+     n1: 37512 0x10BD68: connect_secure (requests.h:966)
+      n1: 37512 0x10D519: perform_request (requests.h:1424)
+       n1: 37512 0x10D780: requests_perform_file (requests.h:1467)
+        n1: 37512 0x10D8B4: requests_get_file (requests.h:1492)
+         n0: 37512 0x10DC98: main (main.c:51)
+ n1: 18904 0x48EE7CD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 18904 0x4982848: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 18904 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 18904 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 18904 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 18904 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 18904 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 18904 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 18904 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 18904 0x10BD24: connect_secure (requests.h:961)
+           n1: 18904 0x10D519: perform_request (requests.h:1424)
+            n1: 18904 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 18904 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 18904 0x10DC98: main (main.c:51)
+ n1: 16080 0x49145B9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n0: 16080 in 3 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=17
+#-----------
+time=83547161
+mem_heap_B=1984225
+mem_heap_extra_B=14159
+mem_stacks_B=0
+heap_tree=detailed
+n5: 1984225 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n2: 1653024 0x491503A: wc_ecc_new_point (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 1646592 0x4915335: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n2: 1646592 0x491AB96: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 823296 0x491B0BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 823296 0x491B290: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 823296 0x494A9C4: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 823296 0x49C9E93: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 823296 0x49D00DE: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 823296 0x49D1422: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 823296 0x49DADFA: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 823296 0x495D817: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 823296 0x4985A07: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+             n1: 823296 0x10AC5B: tls_connect (requests.h:606)
+              n1: 823296 0x10BE44: connect_secure (requests.h:976)
+               n1: 823296 0x10D519: perform_request (requests.h:1424)
+                n1: 823296 0x10D780: requests_perform_file (requests.h:1467)
+                 n1: 823296 0x10D8B4: requests_get_file (requests.h:1492)
+                  n0: 823296 0x10DC98: main (main.c:51)
+    n1: 823296 0x491BBE9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 823296 0x491BDF7: wc_ecc_shared_secret_ex (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 823296 0x49CA7D9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 823296 0x49D4DA0: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 823296 0x49DB7BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 823296 0x49DF369: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 823296 0x496E88F: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 823296 0x4985A7B: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 823296 0x10AC5B: tls_connect (requests.h:606)
+             n1: 823296 0x10BE44: connect_secure (requests.h:976)
+              n1: 823296 0x10D519: perform_request (requests.h:1424)
+               n1: 823296 0x10D780: requests_perform_file (requests.h:1467)
+                n1: 823296 0x10D8B4: requests_get_file (requests.h:1492)
+                 n0: 823296 0x10DC98: main (main.c:51)
+  n0: 6432 in 1 place, below massif's threshold (1.00%)
+ n2: 155010 0x48EF57B: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 155010 0x4982867: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 155010 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 155010 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 155010 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 155010 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 155010 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 155010 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 155010 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 155010 0x10BD24: connect_secure (requests.h:961)
+           n1: 155010 0x10D519: perform_request (requests.h:1424)
+            n1: 155010 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 155010 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 155010 0x10DC98: main (main.c:51)
+  n0: 0 in 1 place, below massif's threshold (1.00%)
+ n0: 95229 in 72 places, all below massif's threshold (1.00%)
+ n1: 43450 0x48F983D: ParseCert (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 43450 0x49826A5: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 43450 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 43450 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 43450 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 43450 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 43450 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 43450 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 43450 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 43450 0x10BD24: connect_secure (requests.h:961)
+           n1: 43450 0x10D519: perform_request (requests.h:1424)
+            n1: 43450 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 43450 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 43450 0x10DC98: main (main.c:51)
+ n1: 37512 0x49B2692: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 37512 0x494C495: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 37512 0x497EE6C: wolfSSL_new (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 37512 0x10ABD9: tls_conn_new (requests.h:590)
+     n1: 37512 0x10BD68: connect_secure (requests.h:966)
+      n1: 37512 0x10D519: perform_request (requests.h:1424)
+       n1: 37512 0x10D780: requests_perform_file (requests.h:1467)
+        n1: 37512 0x10D8B4: requests_get_file (requests.h:1492)
+         n0: 37512 0x10DC98: main (main.c:51)
+#-----------
+snapshot=18
+#-----------
+time=89701628
+mem_heap_B=1907220
+mem_heap_extra_B=13804
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=19
+#-----------
+time=127540821
+mem_heap_B=1967926
+mem_heap_extra_B=14234
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=20
+#-----------
+time=132487619
+mem_heap_B=2815236
+mem_heap_extra_B=16428
+mem_stacks_B=0
+heap_tree=detailed
+n5: 2815236 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n2: 2479536 0x491503A: wc_ecc_new_point (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 2469888 0x4915335: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n2: 2469888 0x491AB96: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 1646592 0x491BBE9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 1646592 0x491BDF7: wc_ecc_shared_secret_ex (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 1646592 0x49CA7D9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 1646592 0x49D4DA0: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 1646592 0x49DB7BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 1646592 0x49DF369: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 1646592 0x496E88F: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 1646592 0x4985A7B: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 1646592 0x10AC5B: tls_connect (requests.h:606)
+             n1: 1646592 0x10BE44: connect_secure (requests.h:976)
+              n1: 1646592 0x10D519: perform_request (requests.h:1424)
+               n1: 1646592 0x10D780: requests_perform_file (requests.h:1467)
+                n2: 1646592 0x10D8B4: requests_get_file (requests.h:1492)
+                 n0: 823296 0x10DC98: main (main.c:51)
+                 n0: 823296 0x10DDAB: main (main.c:65)
+    n1: 823296 0x491B0BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 823296 0x491B290: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 823296 0x494A9C4: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 823296 0x49C9E93: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 823296 0x49D00DE: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 823296 0x49D1422: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 823296 0x49DADFA: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 823296 0x495D817: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 823296 0x4985A07: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+             n1: 823296 0x10AC5B: tls_connect (requests.h:606)
+              n1: 823296 0x10BE44: connect_secure (requests.h:976)
+               n1: 823296 0x10D519: perform_request (requests.h:1424)
+                n1: 823296 0x10D780: requests_perform_file (requests.h:1467)
+                 n1: 823296 0x10D8B4: requests_get_file (requests.h:1492)
+                  n0: 823296 0x10DC98: main (main.c:51)
+  n0: 9648 in 1 place, below massif's threshold (1.00%)
+ n2: 156278 0x48EF57B: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 156278 0x4982867: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 155010 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 155010 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 155010 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 155010 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 155010 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 155010 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 155010 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 155010 0x10BD24: connect_secure (requests.h:961)
+           n1: 155010 0x10D519: perform_request (requests.h:1424)
+            n1: 155010 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 155010 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 155010 0x10DC98: main (main.c:51)
+   n0: 1268 in 1 place, below massif's threshold (1.00%)
+  n0: 0 in 3 places, all below massif's threshold (1.00%)
+ n0: 98190 in 118 places, all below massif's threshold (1.00%)
+ n1: 43720 0x48F983D: ParseCert (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 43720 0x49826A5: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 43450 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 43450 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 43450 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 43450 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 43450 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 43450 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 43450 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 43450 0x10BD24: connect_secure (requests.h:961)
+           n1: 43450 0x10D519: perform_request (requests.h:1424)
+            n1: 43450 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 43450 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 43450 0x10DC98: main (main.c:51)
+   n0: 270 in 1 place, below massif's threshold (1.00%)
+ n1: 37512 0x49B2692: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 37512 0x494C495: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 37512 0x497EE6C: wolfSSL_new (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 37512 0x10ABD9: tls_conn_new (requests.h:590)
+     n1: 37512 0x10BD68: connect_secure (requests.h:966)
+      n1: 37512 0x10D519: perform_request (requests.h:1424)
+       n1: 37512 0x10D780: requests_perform_file (requests.h:1467)
+        n2: 37512 0x10D8B4: requests_get_file (requests.h:1492)
+         n0: 37512 0x10DDAB: main (main.c:65)
+         n0: 0 in 1 place, below massif's threshold (1.00%)
+#-----------
+snapshot=21
+#-----------
+time=137553434
+mem_heap_B=2851615
+mem_heap_extra_B=18721
+mem_stacks_B=0
+heap_tree=peak
+n5: 2851615 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n2: 2479536 0x491503A: wc_ecc_new_point (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 2469888 0x4915335: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n2: 2469888 0x491AB96: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 1646592 0x491BBE9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 1646592 0x491BDF7: wc_ecc_shared_secret_ex (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 1646592 0x49CA7D9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 1646592 0x49D4DA0: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 1646592 0x49DB7BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 1646592 0x49DF369: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 1646592 0x496E88F: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 1646592 0x4985A7B: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 1646592 0x10AC5B: tls_connect (requests.h:606)
+             n1: 1646592 0x10BE44: connect_secure (requests.h:976)
+              n1: 1646592 0x10D519: perform_request (requests.h:1424)
+               n1: 1646592 0x10D780: requests_perform_file (requests.h:1467)
+                n2: 1646592 0x10D8B4: requests_get_file (requests.h:1492)
+                 n0: 823296 0x10DC98: main (main.c:51)
+                 n0: 823296 0x10DDAB: main (main.c:65)
+    n1: 823296 0x491B0BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 823296 0x491B290: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 823296 0x494A9C4: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 823296 0x49C9E93: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 823296 0x49D00DE: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 823296 0x49D1422: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 823296 0x49DADFA: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 823296 0x495D817: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 823296 0x4985A07: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+             n1: 823296 0x10AC5B: tls_connect (requests.h:606)
+              n1: 823296 0x10BE44: connect_secure (requests.h:976)
+               n1: 823296 0x10D519: perform_request (requests.h:1424)
+                n1: 823296 0x10D780: requests_perform_file (requests.h:1467)
+                 n1: 823296 0x10D8B4: requests_get_file (requests.h:1492)
+                  n0: 823296 0x10DC98: main (main.c:51)
+  n0: 9648 in 1 place, below massif's threshold (1.00%)
+ n2: 159724 0x48EF57B: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 156278 0x4982867: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 155010 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 155010 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 155010 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 155010 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 155010 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 155010 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 155010 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 155010 0x10BD24: connect_secure (requests.h:961)
+           n1: 155010 0x10D519: perform_request (requests.h:1424)
+            n1: 155010 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 155010 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 155010 0x10DC98: main (main.c:51)
+   n0: 1268 in 1 place, below massif's threshold (1.00%)
+  n0: 3446 in 3 places, all below massif's threshold (1.00%)
+ n0: 131123 in 118 places, all below massif's threshold (1.00%)
+ n1: 43720 0x48F983D: ParseCert (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 43720 0x49826A5: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 43450 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 43450 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 43450 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 43450 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 43450 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 43450 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 43450 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 43450 0x10BD24: connect_secure (requests.h:961)
+           n1: 43450 0x10D519: perform_request (requests.h:1424)
+            n1: 43450 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 43450 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 43450 0x10DC98: main (main.c:51)
+   n0: 270 in 1 place, below massif's threshold (1.00%)
+ n1: 37512 0x49B2692: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 37512 0x494C495: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 37512 0x497EE6C: wolfSSL_new (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 37512 0x10ABD9: tls_conn_new (requests.h:590)
+     n1: 37512 0x10BD68: connect_secure (requests.h:966)
+      n1: 37512 0x10D519: perform_request (requests.h:1424)
+       n1: 37512 0x10D780: requests_perform_file (requests.h:1467)
+        n2: 37512 0x10D8B4: requests_get_file (requests.h:1492)
+         n0: 37512 0x10DDAB: main (main.c:65)
+         n0: 0 in 1 place, below massif's threshold (1.00%)
+#-----------
+snapshot=22
+#-----------
+time=140601402
+mem_heap_B=2867102
+mem_heap_extra_B=17754
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=23
+#-----------
+time=145244958
+mem_heap_B=2871198
+mem_heap_extra_B=17762
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=24
+#-----------
+time=149092676
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=25
+#-----------
+time=153735108
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=detailed
+n6: 2854797 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n2: 2479536 0x491503A: wc_ecc_new_point (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 2469888 0x4915335: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n2: 2469888 0x491AB96: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 1646592 0x491BBE9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 1646592 0x491BDF7: wc_ecc_shared_secret_ex (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 1646592 0x49CA7D9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 1646592 0x49D4DA0: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 1646592 0x49DB7BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 1646592 0x49DF369: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 1646592 0x496E88F: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 1646592 0x4985A7B: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 1646592 0x10AC5B: tls_connect (requests.h:606)
+             n1: 1646592 0x10BE44: connect_secure (requests.h:976)
+              n1: 1646592 0x10D519: perform_request (requests.h:1424)
+               n1: 1646592 0x10D780: requests_perform_file (requests.h:1467)
+                n2: 1646592 0x10D8B4: requests_get_file (requests.h:1492)
+                 n0: 823296 0x10DC98: main (main.c:51)
+                 n0: 823296 0x10DDAB: main (main.c:65)
+    n1: 823296 0x491B0BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 823296 0x491B290: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 823296 0x494A9C4: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 823296 0x49C9E93: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 823296 0x49D00DE: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 823296 0x49D1422: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 823296 0x49DADFA: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 823296 0x495D817: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 823296 0x4985A07: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+             n1: 823296 0x10AC5B: tls_connect (requests.h:606)
+              n1: 823296 0x10BE44: connect_secure (requests.h:976)
+               n1: 823296 0x10D519: perform_request (requests.h:1424)
+                n1: 823296 0x10D780: requests_perform_file (requests.h:1467)
+                 n1: 823296 0x10D8B4: requests_get_file (requests.h:1492)
+                  n0: 823296 0x10DC98: main (main.c:51)
+  n0: 9648 in 1 place, below massif's threshold (1.00%)
+ n2: 158001 0x48EF57B: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 156278 0x4982867: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 155010 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 155010 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 155010 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 155010 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 155010 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 155010 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 155010 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 155010 0x10BD24: connect_secure (requests.h:961)
+           n1: 155010 0x10D519: perform_request (requests.h:1424)
+            n1: 155010 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 155010 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 155010 0x10DC98: main (main.c:51)
+   n0: 1268 in 1 place, below massif's threshold (1.00%)
+  n0: 1723 in 3 places, all below massif's threshold (1.00%)
+ n0: 103260 in 117 places, all below massif's threshold (1.00%)
+ n1: 43720 0x48F983D: ParseCert (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 43720 0x49826A5: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 43450 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 43450 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 43450 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 43450 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 43450 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 43450 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 43450 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 43450 0x10BD24: connect_secure (requests.h:961)
+           n1: 43450 0x10D519: perform_request (requests.h:1424)
+            n1: 43450 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 43450 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 43450 0x10DC98: main (main.c:51)
+   n0: 270 in 1 place, below massif's threshold (1.00%)
+ n1: 37512 0x49B2692: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 37512 0x494C495: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 37512 0x497EE6C: wolfSSL_new (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 37512 0x10ABD9: tls_conn_new (requests.h:590)
+     n1: 37512 0x10BD68: connect_secure (requests.h:966)
+      n1: 37512 0x10D519: perform_request (requests.h:1424)
+       n1: 37512 0x10D780: requests_perform_file (requests.h:1467)
+        n2: 37512 0x10D8B4: requests_get_file (requests.h:1492)
+         n0: 37512 0x10DDAB: main (main.c:65)
+         n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 32768 0x10A6EA: net_rd_new (requests.h:452)
+  n1: 32768 0x10D5B7: perform_request (requests.h:1435)
+   n1: 32768 0x10D780: requests_perform_file (requests.h:1467)
+    n2: 32768 0x10D8B4: requests_get_file (requests.h:1492)
+     n0: 32768 0x10DDAB: main (main.c:65)
+     n0: 0 in 1 place, below massif's threshold (1.00%)
+#-----------
+snapshot=26
+#-----------
+time=158377490
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=27
+#-----------
+time=163019872
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=28
+#-----------
+time=167662604
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=29
+#-----------
+time=172305713
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=30
+#-----------
+time=176948822
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=detailed
+n6: 2854797 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n2: 2479536 0x491503A: wc_ecc_new_point (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 2469888 0x4915335: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n2: 2469888 0x491AB96: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 1646592 0x491BBE9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 1646592 0x491BDF7: wc_ecc_shared_secret_ex (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 1646592 0x49CA7D9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 1646592 0x49D4DA0: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 1646592 0x49DB7BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 1646592 0x49DF369: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 1646592 0x496E88F: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 1646592 0x4985A7B: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 1646592 0x10AC5B: tls_connect (requests.h:606)
+             n1: 1646592 0x10BE44: connect_secure (requests.h:976)
+              n1: 1646592 0x10D519: perform_request (requests.h:1424)
+               n1: 1646592 0x10D780: requests_perform_file (requests.h:1467)
+                n2: 1646592 0x10D8B4: requests_get_file (requests.h:1492)
+                 n0: 823296 0x10DC98: main (main.c:51)
+                 n0: 823296 0x10DDAB: main (main.c:65)
+    n1: 823296 0x491B0BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 823296 0x491B290: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 823296 0x494A9C4: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 823296 0x49C9E93: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 823296 0x49D00DE: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 823296 0x49D1422: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 823296 0x49DADFA: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 823296 0x495D817: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 823296 0x4985A07: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+             n1: 823296 0x10AC5B: tls_connect (requests.h:606)
+              n1: 823296 0x10BE44: connect_secure (requests.h:976)
+               n1: 823296 0x10D519: perform_request (requests.h:1424)
+                n1: 823296 0x10D780: requests_perform_file (requests.h:1467)
+                 n1: 823296 0x10D8B4: requests_get_file (requests.h:1492)
+                  n0: 823296 0x10DC98: main (main.c:51)
+  n0: 9648 in 1 place, below massif's threshold (1.00%)
+ n2: 158001 0x48EF57B: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 156278 0x4982867: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 155010 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 155010 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 155010 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 155010 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 155010 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 155010 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 155010 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 155010 0x10BD24: connect_secure (requests.h:961)
+           n1: 155010 0x10D519: perform_request (requests.h:1424)
+            n1: 155010 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 155010 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 155010 0x10DC98: main (main.c:51)
+   n0: 1268 in 1 place, below massif's threshold (1.00%)
+  n0: 1723 in 3 places, all below massif's threshold (1.00%)
+ n0: 103260 in 117 places, all below massif's threshold (1.00%)
+ n1: 43720 0x48F983D: ParseCert (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 43720 0x49826A5: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 43450 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 43450 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 43450 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 43450 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 43450 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 43450 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 43450 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 43450 0x10BD24: connect_secure (requests.h:961)
+           n1: 43450 0x10D519: perform_request (requests.h:1424)
+            n1: 43450 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 43450 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 43450 0x10DC98: main (main.c:51)
+   n0: 270 in 1 place, below massif's threshold (1.00%)
+ n1: 37512 0x49B2692: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 37512 0x494C495: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 37512 0x497EE6C: wolfSSL_new (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 37512 0x10ABD9: tls_conn_new (requests.h:590)
+     n1: 37512 0x10BD68: connect_secure (requests.h:966)
+      n1: 37512 0x10D519: perform_request (requests.h:1424)
+       n1: 37512 0x10D780: requests_perform_file (requests.h:1467)
+        n2: 37512 0x10D8B4: requests_get_file (requests.h:1492)
+         n0: 37512 0x10DDAB: main (main.c:65)
+         n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 32768 0x10A6EA: net_rd_new (requests.h:452)
+  n1: 32768 0x10D5B7: perform_request (requests.h:1435)
+   n1: 32768 0x10D780: requests_perform_file (requests.h:1467)
+    n2: 32768 0x10D8B4: requests_get_file (requests.h:1492)
+     n0: 32768 0x10DDAB: main (main.c:65)
+     n0: 0 in 1 place, below massif's threshold (1.00%)
+#-----------
+snapshot=31
+#-----------
+time=181591931
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=32
+#-----------
+time=186235095
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=33
+#-----------
+time=188560912
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=34
+#-----------
+time=193204026
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=35
+#-----------
+time=197847146
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=36
+#-----------
+time=202490366
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=37
+#-----------
+time=207133486
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=38
+#-----------
+time=211776547
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=39
+#-----------
+time=216419608
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=40
+#-----------
+time=221062819
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=41
+#-----------
+time=225706001
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=42
+#-----------
+time=230349062
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=43
+#-----------
+time=234992118
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=44
+#-----------
+time=239635179
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=45
+#-----------
+time=244278290
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=46
+#-----------
+time=248921346
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=47
+#-----------
+time=253564407
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=48
+#-----------
+time=258207456
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=49
+#-----------
+time=260524759
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=50
+#-----------
+time=262850550
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=51
+#-----------
+time=265167853
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=52
+#-----------
+time=267493602
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=53
+#-----------
+time=269810905
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=detailed
+n6: 2854797 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n2: 2479536 0x491503A: wc_ecc_new_point (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 2469888 0x4915335: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n2: 2469888 0x491AB96: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 1646592 0x491BBE9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 1646592 0x491BDF7: wc_ecc_shared_secret_ex (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 1646592 0x49CA7D9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 1646592 0x49D4DA0: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 1646592 0x49DB7BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 1646592 0x49DF369: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 1646592 0x496E88F: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 1646592 0x4985A7B: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 1646592 0x10AC5B: tls_connect (requests.h:606)
+             n1: 1646592 0x10BE44: connect_secure (requests.h:976)
+              n1: 1646592 0x10D519: perform_request (requests.h:1424)
+               n1: 1646592 0x10D780: requests_perform_file (requests.h:1467)
+                n2: 1646592 0x10D8B4: requests_get_file (requests.h:1492)
+                 n0: 823296 0x10DC98: main (main.c:51)
+                 n0: 823296 0x10DDAB: main (main.c:65)
+    n1: 823296 0x491B0BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 823296 0x491B290: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 823296 0x494A9C4: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 823296 0x49C9E93: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 823296 0x49D00DE: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 823296 0x49D1422: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 823296 0x49DADFA: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 823296 0x495D817: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 823296 0x4985A07: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+             n1: 823296 0x10AC5B: tls_connect (requests.h:606)
+              n1: 823296 0x10BE44: connect_secure (requests.h:976)
+               n1: 823296 0x10D519: perform_request (requests.h:1424)
+                n1: 823296 0x10D780: requests_perform_file (requests.h:1467)
+                 n1: 823296 0x10D8B4: requests_get_file (requests.h:1492)
+                  n0: 823296 0x10DC98: main (main.c:51)
+  n0: 9648 in 1 place, below massif's threshold (1.00%)
+ n2: 158001 0x48EF57B: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 156278 0x4982867: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 155010 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 155010 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 155010 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 155010 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 155010 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 155010 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 155010 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 155010 0x10BD24: connect_secure (requests.h:961)
+           n1: 155010 0x10D519: perform_request (requests.h:1424)
+            n1: 155010 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 155010 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 155010 0x10DC98: main (main.c:51)
+   n0: 1268 in 1 place, below massif's threshold (1.00%)
+  n0: 1723 in 3 places, all below massif's threshold (1.00%)
+ n0: 103260 in 117 places, all below massif's threshold (1.00%)
+ n1: 43720 0x48F983D: ParseCert (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 43720 0x49826A5: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 43450 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 43450 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 43450 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 43450 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 43450 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 43450 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 43450 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 43450 0x10BD24: connect_secure (requests.h:961)
+           n1: 43450 0x10D519: perform_request (requests.h:1424)
+            n1: 43450 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 43450 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 43450 0x10DC98: main (main.c:51)
+   n0: 270 in 1 place, below massif's threshold (1.00%)
+ n1: 37512 0x49B2692: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 37512 0x494C495: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 37512 0x497EE6C: wolfSSL_new (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 37512 0x10ABD9: tls_conn_new (requests.h:590)
+     n1: 37512 0x10BD68: connect_secure (requests.h:966)
+      n1: 37512 0x10D519: perform_request (requests.h:1424)
+       n1: 37512 0x10D780: requests_perform_file (requests.h:1467)
+        n2: 37512 0x10D8B4: requests_get_file (requests.h:1492)
+         n0: 37512 0x10DDAB: main (main.c:65)
+         n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 32768 0x10A6EA: net_rd_new (requests.h:452)
+  n1: 32768 0x10D5B7: perform_request (requests.h:1435)
+   n1: 32768 0x10D780: requests_perform_file (requests.h:1467)
+    n2: 32768 0x10D8B4: requests_get_file (requests.h:1492)
+     n0: 32768 0x10DDAB: main (main.c:65)
+     n0: 0 in 1 place, below massif's threshold (1.00%)
+#-----------
+snapshot=54
+#-----------
+time=272136654
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=55
+#-----------
+time=274453957
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=56
+#-----------
+time=276779704
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=57
+#-----------
+time=279097007
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=58
+#-----------
+time=281422787
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=59
+#-----------
+time=283740340
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=60
+#-----------
+time=286066270
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=61
+#-----------
+time=288383773
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=62
+#-----------
+time=290709698
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=63
+#-----------
+time=293027251
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=detailed
+n6: 2854797 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n2: 2479536 0x491503A: wc_ecc_new_point (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 2469888 0x4915335: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n2: 2469888 0x491AB96: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 1646592 0x491BBE9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 1646592 0x491BDF7: wc_ecc_shared_secret_ex (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 1646592 0x49CA7D9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 1646592 0x49D4DA0: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 1646592 0x49DB7BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 1646592 0x49DF369: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 1646592 0x496E88F: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 1646592 0x4985A7B: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 1646592 0x10AC5B: tls_connect (requests.h:606)
+             n1: 1646592 0x10BE44: connect_secure (requests.h:976)
+              n1: 1646592 0x10D519: perform_request (requests.h:1424)
+               n1: 1646592 0x10D780: requests_perform_file (requests.h:1467)
+                n2: 1646592 0x10D8B4: requests_get_file (requests.h:1492)
+                 n0: 823296 0x10DC98: main (main.c:51)
+                 n0: 823296 0x10DDAB: main (main.c:65)
+    n1: 823296 0x491B0BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 823296 0x491B290: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 823296 0x494A9C4: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 823296 0x49C9E93: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 823296 0x49D00DE: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 823296 0x49D1422: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 823296 0x49DADFA: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 823296 0x495D817: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 823296 0x4985A07: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+             n1: 823296 0x10AC5B: tls_connect (requests.h:606)
+              n1: 823296 0x10BE44: connect_secure (requests.h:976)
+               n1: 823296 0x10D519: perform_request (requests.h:1424)
+                n1: 823296 0x10D780: requests_perform_file (requests.h:1467)
+                 n1: 823296 0x10D8B4: requests_get_file (requests.h:1492)
+                  n0: 823296 0x10DC98: main (main.c:51)
+  n0: 9648 in 1 place, below massif's threshold (1.00%)
+ n2: 158001 0x48EF57B: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 156278 0x4982867: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 155010 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 155010 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 155010 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 155010 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 155010 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 155010 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 155010 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 155010 0x10BD24: connect_secure (requests.h:961)
+           n1: 155010 0x10D519: perform_request (requests.h:1424)
+            n1: 155010 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 155010 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 155010 0x10DC98: main (main.c:51)
+   n0: 1268 in 1 place, below massif's threshold (1.00%)
+  n0: 1723 in 3 places, all below massif's threshold (1.00%)
+ n0: 103260 in 117 places, all below massif's threshold (1.00%)
+ n1: 43720 0x48F983D: ParseCert (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 43720 0x49826A5: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 43450 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 43450 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 43450 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 43450 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 43450 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 43450 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 43450 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 43450 0x10BD24: connect_secure (requests.h:961)
+           n1: 43450 0x10D519: perform_request (requests.h:1424)
+            n1: 43450 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 43450 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 43450 0x10DC98: main (main.c:51)
+   n0: 270 in 1 place, below massif's threshold (1.00%)
+ n1: 37512 0x49B2692: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 37512 0x494C495: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 37512 0x497EE6C: wolfSSL_new (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 37512 0x10ABD9: tls_conn_new (requests.h:590)
+     n1: 37512 0x10BD68: connect_secure (requests.h:966)
+      n1: 37512 0x10D519: perform_request (requests.h:1424)
+       n1: 37512 0x10D780: requests_perform_file (requests.h:1467)
+        n2: 37512 0x10D8B4: requests_get_file (requests.h:1492)
+         n0: 37512 0x10DDAB: main (main.c:65)
+         n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 32768 0x10A6EA: net_rd_new (requests.h:452)
+  n1: 32768 0x10D5B7: perform_request (requests.h:1435)
+   n1: 32768 0x10D780: requests_perform_file (requests.h:1467)
+    n2: 32768 0x10D8B4: requests_get_file (requests.h:1492)
+     n0: 32768 0x10DDAB: main (main.c:65)
+     n0: 0 in 1 place, below massif's threshold (1.00%)
+#-----------
+snapshot=64
+#-----------
+time=295353226
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=65
+#-----------
+time=297670779
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=66
+#-----------
+time=299996704
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=67
+#-----------
+time=302314107
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=68
+#-----------
+time=304640132
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=69
+#-----------
+time=306957485
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=70
+#-----------
+time=309283431
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=71
+#-----------
+time=311600734
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=72
+#-----------
+time=313926559
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=73
+#-----------
+time=316243862
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=detailed
+n6: 2854797 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n2: 2479536 0x491503A: wc_ecc_new_point (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 2469888 0x4915335: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n2: 2469888 0x491AB96: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 1646592 0x491BBE9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 1646592 0x491BDF7: wc_ecc_shared_secret_ex (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 1646592 0x49CA7D9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 1646592 0x49D4DA0: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 1646592 0x49DB7BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 1646592 0x49DF369: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 1646592 0x496E88F: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 1646592 0x4985A7B: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 1646592 0x10AC5B: tls_connect (requests.h:606)
+             n1: 1646592 0x10BE44: connect_secure (requests.h:976)
+              n1: 1646592 0x10D519: perform_request (requests.h:1424)
+               n1: 1646592 0x10D780: requests_perform_file (requests.h:1467)
+                n2: 1646592 0x10D8B4: requests_get_file (requests.h:1492)
+                 n0: 823296 0x10DC98: main (main.c:51)
+                 n0: 823296 0x10DDAB: main (main.c:65)
+    n1: 823296 0x491B0BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 823296 0x491B290: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 823296 0x494A9C4: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 823296 0x49C9E93: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 823296 0x49D00DE: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 823296 0x49D1422: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 823296 0x49DADFA: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 823296 0x495D817: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 823296 0x4985A07: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+             n1: 823296 0x10AC5B: tls_connect (requests.h:606)
+              n1: 823296 0x10BE44: connect_secure (requests.h:976)
+               n1: 823296 0x10D519: perform_request (requests.h:1424)
+                n1: 823296 0x10D780: requests_perform_file (requests.h:1467)
+                 n1: 823296 0x10D8B4: requests_get_file (requests.h:1492)
+                  n0: 823296 0x10DC98: main (main.c:51)
+  n0: 9648 in 1 place, below massif's threshold (1.00%)
+ n2: 158001 0x48EF57B: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 156278 0x4982867: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 155010 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 155010 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 155010 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 155010 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 155010 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 155010 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 155010 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 155010 0x10BD24: connect_secure (requests.h:961)
+           n1: 155010 0x10D519: perform_request (requests.h:1424)
+            n1: 155010 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 155010 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 155010 0x10DC98: main (main.c:51)
+   n0: 1268 in 1 place, below massif's threshold (1.00%)
+  n0: 1723 in 3 places, all below massif's threshold (1.00%)
+ n0: 103260 in 117 places, all below massif's threshold (1.00%)
+ n1: 43720 0x48F983D: ParseCert (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 43720 0x49826A5: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 43450 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 43450 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 43450 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 43450 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 43450 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 43450 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 43450 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 43450 0x10BD24: connect_secure (requests.h:961)
+           n1: 43450 0x10D519: perform_request (requests.h:1424)
+            n1: 43450 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 43450 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 43450 0x10DC98: main (main.c:51)
+   n0: 270 in 1 place, below massif's threshold (1.00%)
+ n1: 37512 0x49B2692: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 37512 0x494C495: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 37512 0x497EE6C: wolfSSL_new (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 37512 0x10ABD9: tls_conn_new (requests.h:590)
+     n1: 37512 0x10BD68: connect_secure (requests.h:966)
+      n1: 37512 0x10D519: perform_request (requests.h:1424)
+       n1: 37512 0x10D780: requests_perform_file (requests.h:1467)
+        n2: 37512 0x10D8B4: requests_get_file (requests.h:1492)
+         n0: 37512 0x10DDAB: main (main.c:65)
+         n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 32768 0x10A6EA: net_rd_new (requests.h:452)
+  n1: 32768 0x10D5B7: perform_request (requests.h:1435)
+   n1: 32768 0x10D780: requests_perform_file (requests.h:1467)
+    n2: 32768 0x10D8B4: requests_get_file (requests.h:1492)
+     n0: 32768 0x10DDAB: main (main.c:65)
+     n0: 0 in 1 place, below massif's threshold (1.00%)
+#-----------
+snapshot=74
+#-----------
+time=318569687
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=75
+#-----------
+time=320886990
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=76
+#-----------
+time=323212865
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=77
+#-----------
+time=325530268
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=78
+#-----------
+time=327856243
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=79
+#-----------
+time=330173596
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=80
+#-----------
+time=332499427
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=81
+#-----------
+time=334816730
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=82
+#-----------
+time=337142561
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=83
+#-----------
+time=339459864
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=detailed
+n6: 2854797 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n2: 2479536 0x491503A: wc_ecc_new_point (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 2469888 0x4915335: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n2: 2469888 0x491AB96: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 1646592 0x491BBE9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 1646592 0x491BDF7: wc_ecc_shared_secret_ex (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 1646592 0x49CA7D9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 1646592 0x49D4DA0: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 1646592 0x49DB7BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 1646592 0x49DF369: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 1646592 0x496E88F: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 1646592 0x4985A7B: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 1646592 0x10AC5B: tls_connect (requests.h:606)
+             n1: 1646592 0x10BE44: connect_secure (requests.h:976)
+              n1: 1646592 0x10D519: perform_request (requests.h:1424)
+               n1: 1646592 0x10D780: requests_perform_file (requests.h:1467)
+                n2: 1646592 0x10D8B4: requests_get_file (requests.h:1492)
+                 n0: 823296 0x10DC98: main (main.c:51)
+                 n0: 823296 0x10DDAB: main (main.c:65)
+    n1: 823296 0x491B0BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 823296 0x491B290: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 823296 0x494A9C4: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 823296 0x49C9E93: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 823296 0x49D00DE: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 823296 0x49D1422: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 823296 0x49DADFA: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 823296 0x495D817: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 823296 0x4985A07: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+             n1: 823296 0x10AC5B: tls_connect (requests.h:606)
+              n1: 823296 0x10BE44: connect_secure (requests.h:976)
+               n1: 823296 0x10D519: perform_request (requests.h:1424)
+                n1: 823296 0x10D780: requests_perform_file (requests.h:1467)
+                 n1: 823296 0x10D8B4: requests_get_file (requests.h:1492)
+                  n0: 823296 0x10DC98: main (main.c:51)
+  n0: 9648 in 1 place, below massif's threshold (1.00%)
+ n2: 158001 0x48EF57B: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 156278 0x4982867: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 155010 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 155010 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 155010 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 155010 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 155010 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 155010 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 155010 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 155010 0x10BD24: connect_secure (requests.h:961)
+           n1: 155010 0x10D519: perform_request (requests.h:1424)
+            n1: 155010 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 155010 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 155010 0x10DC98: main (main.c:51)
+   n0: 1268 in 1 place, below massif's threshold (1.00%)
+  n0: 1723 in 3 places, all below massif's threshold (1.00%)
+ n0: 103260 in 117 places, all below massif's threshold (1.00%)
+ n1: 43720 0x48F983D: ParseCert (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 43720 0x49826A5: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 43450 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 43450 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 43450 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 43450 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 43450 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 43450 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 43450 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 43450 0x10BD24: connect_secure (requests.h:961)
+           n1: 43450 0x10D519: perform_request (requests.h:1424)
+            n1: 43450 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 43450 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 43450 0x10DC98: main (main.c:51)
+   n0: 270 in 1 place, below massif's threshold (1.00%)
+ n1: 37512 0x49B2692: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 37512 0x494C495: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 37512 0x497EE6C: wolfSSL_new (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 37512 0x10ABD9: tls_conn_new (requests.h:590)
+     n1: 37512 0x10BD68: connect_secure (requests.h:966)
+      n1: 37512 0x10D519: perform_request (requests.h:1424)
+       n1: 37512 0x10D780: requests_perform_file (requests.h:1467)
+        n2: 37512 0x10D8B4: requests_get_file (requests.h:1492)
+         n0: 37512 0x10DDAB: main (main.c:65)
+         n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 32768 0x10A6EA: net_rd_new (requests.h:452)
+  n1: 32768 0x10D5B7: perform_request (requests.h:1435)
+   n1: 32768 0x10D780: requests_perform_file (requests.h:1467)
+    n2: 32768 0x10D8B4: requests_get_file (requests.h:1492)
+     n0: 32768 0x10DDAB: main (main.c:65)
+     n0: 0 in 1 place, below massif's threshold (1.00%)
+#-----------
+snapshot=84
+#-----------
+time=341785695
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=85
+#-----------
+time=344102998
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=86
+#-----------
+time=346428801
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=87
+#-----------
+time=348746104
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=88
+#-----------
+time=351071907
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=89
+#-----------
+time=353389210
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=90
+#-----------
+time=355715063
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=91
+#-----------
+time=358032366
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=92
+#-----------
+time=360358169
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=93
+#-----------
+time=362675472
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=detailed
+n6: 2854797 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n2: 2479536 0x491503A: wc_ecc_new_point (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 2469888 0x4915335: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n2: 2469888 0x491AB96: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 1646592 0x491BBE9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 1646592 0x491BDF7: wc_ecc_shared_secret_ex (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 1646592 0x49CA7D9: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 1646592 0x49D4DA0: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 1646592 0x49DB7BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 1646592 0x49DF369: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 1646592 0x496E88F: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 1646592 0x4985A7B: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 1646592 0x10AC5B: tls_connect (requests.h:606)
+             n1: 1646592 0x10BE44: connect_secure (requests.h:976)
+              n1: 1646592 0x10D519: perform_request (requests.h:1424)
+               n1: 1646592 0x10D780: requests_perform_file (requests.h:1467)
+                n2: 1646592 0x10D8B4: requests_get_file (requests.h:1492)
+                 n0: 823296 0x10DC98: main (main.c:51)
+                 n0: 823296 0x10DDAB: main (main.c:65)
+    n1: 823296 0x491B0BC: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 823296 0x491B290: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 823296 0x494A9C4: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 823296 0x49C9E93: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 823296 0x49D00DE: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 823296 0x49D1422: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+          n1: 823296 0x49DADFA: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+           n1: 823296 0x495D817: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+            n1: 823296 0x4985A07: wolfSSL_connect (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+             n1: 823296 0x10AC5B: tls_connect (requests.h:606)
+              n1: 823296 0x10BE44: connect_secure (requests.h:976)
+               n1: 823296 0x10D519: perform_request (requests.h:1424)
+                n1: 823296 0x10D780: requests_perform_file (requests.h:1467)
+                 n1: 823296 0x10D8B4: requests_get_file (requests.h:1492)
+                  n0: 823296 0x10DC98: main (main.c:51)
+  n0: 9648 in 1 place, below massif's threshold (1.00%)
+ n2: 158001 0x48EF57B: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 156278 0x4982867: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 155010 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 155010 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 155010 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 155010 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 155010 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 155010 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 155010 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 155010 0x10BD24: connect_secure (requests.h:961)
+           n1: 155010 0x10D519: perform_request (requests.h:1424)
+            n1: 155010 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 155010 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 155010 0x10DC98: main (main.c:51)
+   n0: 1268 in 1 place, below massif's threshold (1.00%)
+  n0: 1723 in 3 places, all below massif's threshold (1.00%)
+ n0: 103260 in 117 places, all below massif's threshold (1.00%)
+ n1: 43720 0x48F983D: ParseCert (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n2: 43720 0x49826A5: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 43450 0x4993793: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 43450 0x499565C: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+     n1: 43450 0x4995ADD: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+      n1: 43450 0x4996280: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+       n1: 43450 0x499642A: wolfSSL_CTX_load_system_CA_certs (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+        n1: 43450 0x4996458: wolfSSL_CTX_set_default_verify_paths (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+         n1: 43450 0x10ABAC: tls_init_context (requests.h:581)
+          n1: 43450 0x10BD24: connect_secure (requests.h:961)
+           n1: 43450 0x10D519: perform_request (requests.h:1424)
+            n1: 43450 0x10D780: requests_perform_file (requests.h:1467)
+             n1: 43450 0x10D8B4: requests_get_file (requests.h:1492)
+              n0: 43450 0x10DC98: main (main.c:51)
+   n0: 270 in 1 place, below massif's threshold (1.00%)
+ n1: 37512 0x49B2692: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+  n1: 37512 0x494C495: ??? (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+   n1: 37512 0x497EE6C: wolfSSL_new (in /usr/lib/x86_64-linux-gnu/libwolfssl.so.35.3.0)
+    n1: 37512 0x10ABD9: tls_conn_new (requests.h:590)
+     n1: 37512 0x10BD68: connect_secure (requests.h:966)
+      n1: 37512 0x10D519: perform_request (requests.h:1424)
+       n1: 37512 0x10D780: requests_perform_file (requests.h:1467)
+        n2: 37512 0x10D8B4: requests_get_file (requests.h:1492)
+         n0: 37512 0x10DDAB: main (main.c:65)
+         n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 32768 0x10A6EA: net_rd_new (requests.h:452)
+  n1: 32768 0x10D5B7: perform_request (requests.h:1435)
+   n1: 32768 0x10D780: requests_perform_file (requests.h:1467)
+    n2: 32768 0x10D8B4: requests_get_file (requests.h:1492)
+     n0: 32768 0x10DDAB: main (main.c:65)
+     n0: 0 in 1 place, below massif's threshold (1.00%)
+#-----------
+snapshot=94
+#-----------
+time=365001275
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=95
+#-----------
+time=367318578
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=96
+#-----------
+time=369644381
+mem_heap_B=2854797
+mem_heap_extra_B=17739
+mem_stacks_B=0
+heap_tree=empty
