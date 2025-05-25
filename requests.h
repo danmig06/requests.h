@@ -44,7 +44,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h>
-#include <dlfcn.h>
 #define closesocket(s) close(s)
 
 #elif defined(WIN32_LEAN_AND_MEAN) || defined(_WIN32) || defined(WIN32)
@@ -59,10 +58,21 @@
 
 #ifndef REQUESTS_NO_TLS
 
+#ifdef REQUESTS_USE_WOLFSSL
+
+#include <wolfssl/options.h>
+#define OPENSSL_EXTRA
+#include <wolfssl/openssl/ssl.h>
+#undef MIN
+
+#else
+
 #include <openssl/ssl.h>
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 #include <openssl/x509_vfy.h>
+
+#endif // #ifdef REQUESTS_USE_WOLFSSL
 typedef SSL_CTX TLS_CTX;
 typedef SSL TLS_CONN;
 typedef X509 TLS_CERT;
@@ -243,7 +253,6 @@ struct request_options {
 	bool disable_ssl;
 	bool ignore_verification;
 	char* cert;
-
 };
 
 struct response {
@@ -294,8 +303,8 @@ struct response* requests_options(char* url, struct request_options* options);
 void requests_set_log_level(enum LOGLEVEL mask);
 
 #ifndef REQUESTS_NO_TLS
-TLS_CTX* requests_get_ssl_context(void);
-void requests_free_ssl_context(void);
+TLS_CTX* requests_get_tls_context(void);
+void requests_free_tls_context(void);
 #endif
 
 struct response* alloc_response(void);
@@ -560,7 +569,10 @@ static void __os_close_buf(struct ostream* os) {
 #ifndef REQUESTS_NO_TLS
 static TLS_CTX* g_tlslib_ctx = NULL;
 
-static TLS_CTX* init_ssl_context(void) {
+static TLS_CTX* tls_init_context(void) {
+	if(g_tlslib_ctx) {
+		return g_tlslib_ctx;
+	}
 	g_tlslib_ctx = SSL_CTX_new(TLS_client_method());
 	if(!g_tlslib_ctx) {
 		error(FUNC_LINE_FMT "TLS context initialization failed\n", __func__, __LINE__);
@@ -570,7 +582,7 @@ static TLS_CTX* init_ssl_context(void) {
 	return g_tlslib_ctx;
 }
 
-TLS_CTX* requests_get_ssl_context(void) {
+TLS_CTX* requests_get_tls_context(void) {
 	return g_tlslib_ctx;
 }
 
@@ -619,19 +631,15 @@ static bool tls_get_verify_result(TLS_CONN* tls) {
 	return true;
 }
 
-static size_t tls_write(TLS_CONN* tls, void* buf, size_t num) {
-	size_t wrotebytes = 0;
-	SSL_write_ex(tls, buf, num, &wrotebytes);
-	return wrotebytes;
+static int tls_write(TLS_CONN* tls, void* buf, size_t num) {
+	return SSL_write(tls, buf, num);
 }
 
-static size_t tls_read(TLS_CONN* tls, void* buf, size_t num) {
-	size_t readbytes = 0;
-	SSL_read_ex(tls, buf, num, &readbytes);
-	return readbytes;
+static int tls_read(TLS_CONN* tls, void* buf, size_t num) {
+	return SSL_read(tls, buf, num);
 }
 
-void requests_free_ssl_context(void) {
+void requests_free_tls_context(void) {
 	if(g_tlslib_ctx) {
 		SSL_CTX_free(g_tlslib_ctx);
 		g_tlslib_ctx = NULL;
@@ -659,11 +667,11 @@ void netio_close(struct netio* freeptr) {
 	closesocket(freeptr->socket);
 }
 
-void* requests_get_ssl_context(void) {
+void* requests_get_tls_context(void) {
 	return NULL;
 }
 
-void requests_free_ssl_context(void) {
+void requests_free_tls_context(void) {
 	return;
 }
 
@@ -950,7 +958,7 @@ static int connect_to_host(struct url* url) {
 #ifndef REQUESTS_NO_TLS
 static bool connect_secure(struct netio* io, char* vfy_hostname, char* certfile, bool ignore_vfy) {
 	if(io->socket < 0) return false;
-	if(!init_ssl_context()) {
+	if(!tls_init_context()) {
 		error(FUNC_LINE_FMT "failed to initialize SSL context\n", __func__, __LINE__);
 		return false;
 	}
