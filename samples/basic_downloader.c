@@ -85,7 +85,7 @@ cleanup:
 	free(filename);
 	free_url(o.url);
 
-	requests_free_ssl_context();
+	requests_free_tls_context();
 
 #ifdef _WIN32
 	WSACleanup();
