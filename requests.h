@@ -36,6 +36,7 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <errno.h>
+#include <limits.h>
 
 #if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
 
@@ -219,7 +220,7 @@ struct url {
 	enum PROTOCOL protocol;
 	char* hostname;
 	char* route;
-	short port;
+	unsigned short port;
 	struct params* params;
 };
 
@@ -949,7 +950,7 @@ static int connect_to_host(struct url* url) {
         freeaddrinfo(hostinfo);
 
         if(conn == NULL) {
-        	error(FUNC_LINE_FMT "Failed to connect to %s://%s:%d%s\n", 
+        	error(FUNC_LINE_FMT "Failed to connect to %s://%s:%u%s\n", 
 				__func__, __LINE__, (url->protocol == HTTP) ? "http" : "https", url->hostname, url->port, url->route);
 		return -1;
         }
@@ -1026,7 +1027,7 @@ static void send_host_header(struct netio* io, struct url* src_url) {
 	send_format(io, "host: %s", src_url->hostname);
 	if((src_url->protocol == HTTP && src_url->port != 80) ||
 	   (src_url->protocol == HTTPS && src_url->port != 443)) {
-		send_format(io, ":%d", src_url->port);
+		send_format(io, ":%u", src_url->port);
 	}
 	send_format(io, "\r\n");
 }
@@ -1199,14 +1200,17 @@ struct url resolve_url(char* url_str) {
 	char* port_str = NULL;
 	host_url.hostname = clone_string(hostname, hostname_size);
 	if(host_url.hostname && (port_str = strchr(host_url.hostname, ':')) != NULL) {
-		short port = strtol(port_str + 1, NULL, 10);
-		if(errno == 0 && port >= 0) {
-			host_url.port = port;
+		unsigned long port = strtoul(port_str + 1, NULL, 10);
+		if(errno == 0 && port > 0) {
+			if (port > USHRT_MAX) {
+				warn(FUNC_LINE_FMT "Port number is greater than 65535: %u\n", __func__, __LINE__, port);
+			}
+			host_url.port = (unsigned short)port;
 		}
 		*port_str = '\0';
 	}
 
-	debug(FUNC_LINE_FMT "parsed url: {\n\tprotocol: %s\n\thostname: %s\n\troute: %s\n\tport: %d\n}\n",
+	debug(FUNC_LINE_FMT "parsed url: {\n\tprotocol: %s\n\thostname: %s\n\troute: %s\n\tport: %u\n}\n",
 			__func__, __LINE__, (host_url.protocol == HTTP) ? "HTTP" : "HTTPS", host_url.hostname, host_url.route, host_url.port);
 	return host_url;
 }
